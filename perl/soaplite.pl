@@ -8,12 +8,11 @@ use SOAP::Lite; # qw(trace);
 
 my $arg = SOAP::Data->name(arg0 => 'Frank');
 my $soap = SOAP::Lite                                             
-    -> proxy('http://localhost:8080/Hubris');
+    -> proxy('http://localhost:8080/Hubris')
+    -> ns   ('http://service.jaxws/');
 
-
-$soap->on_action( sub { '' } ); #sub { "http://service.jaxws/#sayHello" });
-$soap->autotype(0);
-$soap->ns('http://service.jaxws/', 'jns');
+#$soap->on_action( sub { '' } ); #sub { "http://service.jaxws/#sayHello" });
+#$soap->autotype(0);
 
 my $response = $soap->call('sayHello', $arg);
 
