@@ -51,3 +51,5 @@ say $stuff->join_options(', ');
 
 say "your third option is ", $stuff->get_option(2);
 say "first three-letter option is ", $stuff->find_option(sub { length ($_) == 3 });
+
+say "options containing an a: ", join ', ', $stuff->filter_options(sub { /a/ });
