@@ -4,8 +4,44 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 
 public class WavReader {
+	interface DataReceiver {
+		Number get(ByteBuffer sampleBuf);
+	}
+	
+	static class DataReceiver8 implements DataReceiver {
+		@Override
+		public Number get(ByteBuffer sampleBuf) {
+			return sampleBuf.get();
+		}
+	}
+	static class DataReceiver16 implements DataReceiver {
+		@Override
+		public Number get(ByteBuffer sampleBuf) {
+			return sampleBuf.getShort();
+		}
+	}
+	static class DataReceiver32 implements DataReceiver {
+		@Override
+		public Number get(ByteBuffer sampleBuf) {
+			return sampleBuf.getInt();
+		}
+	}
+	private static DataReceiver getDataReceiver(int bitsPerSample) {
+		switch(bitsPerSample) {
+		case 8:
+			return new DataReceiver8();
+		case 16:
+			return new DataReceiver16();
+		case 32:
+			return new DataReceiver32();
+		default:
+			throw new IllegalArgumentException("unsupported bits per sample: " + bitsPerSample);
+		}
+	}
+	
 	public static void main(String[] args) throws IOException {
 		String filename;
 		if (args.length > 0) {
@@ -13,10 +49,11 @@ public class WavReader {
 		} else {
 			filename = "adios.wav";
 		}
-		try (RandomAccessFile f = new RandomAccessFile(filename, "r")) {
-			byte[] header = new byte[36];
-			f.readFully(header);
-			ByteBuffer bb = ByteBuffer.wrap(header).order(ByteOrder.LITTLE_ENDIAN);
+		try (RandomAccessFile raf = new RandomAccessFile(filename, "r")) {
+			FileChannel fc = raf.getChannel();
+			ByteBuffer bb = ByteBuffer.allocate(36).order(ByteOrder.LITTLE_ENDIAN);
+			fc.read(bb);
+			bb.position(0);
 			byte[] chunkId = new byte[4];
 			bb.get(chunkId);
 			String chunkIdStr = new String(chunkId);
@@ -51,14 +88,24 @@ public class WavReader {
 			int bitsPerSample = bb.getShort();
 			System.out.println("bits per sample=" + bitsPerSample);
 			
-			byte[] dataDesc = new byte[8];
-			f.read(dataDesc);
-			bb = ByteBuffer.wrap(dataDesc).order(ByteOrder.LITTLE_ENDIAN);
+			bb = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
+			fc.read(bb);
+			bb.position(0);
 			bb.get(format);
 			System.out.println("data chunk:" + new String(format));
 			int dataSize = bb.getInt();
 			System.out.println("data size=" + dataSize);
-			
+			ByteBuffer sampleBuf = ByteBuffer.allocate(bytesPerSample);
+			DataReceiver dataReceiver = getDataReceiver(bitsPerSample);
+			for (int i=0; i<dataSize; i++) {
+				sampleBuf.clear();
+				fc.read(sampleBuf);
+				sampleBuf.position(0);
+				for (int c=0; c<numChannels; c++) {
+					Number data = dataReceiver.get(sampleBuf);
+					System.out.println("sample " + i + ", channel " + c + ": " + data);
+				}
+			}
 			
 		}
 	}
