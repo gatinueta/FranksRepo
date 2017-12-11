@@ -17,11 +17,17 @@ def get_totweight(node):
 def mismatches(node):
     totweights = [ totweight[c] for c in ch[node] ]
     if len(totweights) > 0 and max(totweights) != min(totweights):
-        weights = [ w[c] for c in ch[node] ]
-        print(node, ' has mismatch: ', zip(ch[node], totweights, weights))
+        subtree_mismatches = False
         for n in ch[node]:
-            mismatches(n)
+            if mismatches(n):
+                subtree_mismatches = True
+        if not subtree_mismatches:
+            weights = [ w[c] for c in ch[node] ]
+            print(node, ' has mismatch: ', list(zip(ch[node], totweights, weights)))
         print('finished checking children of ', node)
+        return True
+    else:
+        return False
 
 def print_info(node):
     print(node)
