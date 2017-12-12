@@ -26,7 +26,7 @@ for line in fileinput.input():
     if m:
         pl, pr_str = m.groups()
         pr = re.split(',\\s*', pr_str)
-        pipe[int(pl)] = [int(r) for r in pr ]
+        pipe[pl] = pr
     else:
         print(line, ': no match')
 
