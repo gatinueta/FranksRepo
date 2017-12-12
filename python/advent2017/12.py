@@ -1,8 +1,6 @@
 import re
 import fileinput
-from collections import defaultdict
 
-pipe = defaultdict(list)
 
 def find_group(root):
     todo = { root }
@@ -22,13 +20,13 @@ def find_group(root):
     unreachables = unreachables.difference(reachable)
     return len(reachable)
 
+pipe = {}
 for line in fileinput.input():
     m = re.search('(\\d+) <-> (.+)', line)
     if m:
         pl, pr_str = m.groups()
         pr = re.split(',\\s*', pr_str)
-        for r in pr:
-            pipe[int(pl)].append(int(r))
+        pipe[int(pl)] = [int(r) for r in pr ]
     else:
         print(line, ': no match')
 
