@@ -28,38 +28,47 @@ for line in fileinput.input():
     else:
         print(line, ': no match')
 
+# number of snd for each program
 sent = [0, 0]
-q = [ [], [] ]
+# snd/rcv queue for each program
+q = [ [], [] ] 
+# instruction counter for each program
 ic = [0, 0]
+# register values for each program
 r = [ defaultdict(int), defaultdict(int) ]
 r[0]['p'] = 0
 r[1]['p'] = 1
+# set to True of queue is empty on rcv
 stopped = [ False, False ]
+compiled = [ {}, {} ]
+
+# current executing pid
 pid = 0
 
 while True:
     if not stopped[pid]:
-        cinstr = p[ic[pid]]
-        op1 = format(cinstr[1], pid)
-        op2 = format(cinstr[2], pid)
-        op = instrs.get(cinstr[0])
-        if op:
+        cmdstr = compiled[pid].get(ic[pid])
+        if cmdstr == None:
+            # get current instruction
+            cinstr = p[ic[pid]]
+            # convert operands
+            op1 = format(cinstr[1], pid)
+            op2 = format(cinstr[2], pid)
+            op = instrs[cinstr[0]]
             cmdstr = op.format(op1, op2, pid)
-#            print(cinstr, cmdstr)
-            try:
-                exec(cmdstr)
-#                print (pid, r[pid], q[pid])
-                ic[pid] += 1
-            except IndexError:
-#                print('nothing to receive')
-                stopped[pid] = True
-                if stopped[1-pid]:
-                    print(sent)
-                    break
-        else:
-            print(cinstr[0], ": unknown")
-
+            compiled[pid][ic[pid]] = cmdstr
+        try:
+            exec(cmdstr)
+            ic[pid] += 1
+        except IndexError:
+            # rcv on empty queue
+            stopped[pid] = True
+            if stopped[1-pid]:
+                # both stopped. terminate
+                print(sent)
+                break
     pid = 1-pid
 
 
+print(compiled)
 
