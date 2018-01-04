@@ -7,6 +7,8 @@ m = [
     '###'
 ]
 
+#m = [ '123', '456', '789' ]
+
 def flip(m):
     mf = []
     for line in m:
@@ -17,16 +19,16 @@ def rotate(m):
     s = len(m[0])
     mr = []
     for i in range(s):
-        mr.append(''.join([ m[j][i] for j in range(s)]))
+        mr.append(''.join([ m[j][i] for j in reversed(range(s))]))
     return mr
 
-def var(m):
+def getvars(m):
     mf = flip(m)
     var = []
     for i in range(4):
+        var.append(m)
         m = rotate(m)
         mf = rotate(mf)
-        var.append(m)
         var.append(mf)
 
     return var
@@ -62,36 +64,57 @@ def split(m):
         blocks.append(blockline)
     return blocks
 
+def join(blocks):
+    s = len(blocks)
+    bs = len(blocks[0][0])
+    m = [ [] for i in range(s*bs)]
+    for y in range(s):
+        for yi in range(bs):
+            for x in range(s):
+                for xi in range(bs):
+                    m[y*bs+yi].append(blocks[y][x][yi][xi])
+    for y in range(len(m)):
+        m[y] = ''.join(m[y])
+    return m
+    
+            
 def countons(m):
     n = 0
     for line in m:
         n += line.count('#')
     return n
 
-blocks = split(m)
+def printm(m):
+    for line in m:
+        print(line)
 
-nb = len(blocks)
+it = 0
+while True:
+    blocks = split(m)
 
-for y in range(nb):
-    for x in range(nb):
-        ons = countons(blocks[y][x])
-        vars = var(blocks[y][x])
-        found_rule = False
-        for var in vars:
-            for rule in rules:
-                if ons == rule[0]:
-                    print(rule[1], var)
-                if rule[1] == var:
-                    blocks[y][x] = rule[2]
-                    found_rule = True
+    nb = len(blocks)
+
+    for y in range(nb):
+        for x in range(nb):
+            ons = countons(blocks[y][x])
+            vars = getvars(blocks[y][x])
+            found_rule = False
+            for var in vars:
+                for rule in rules:
+                    if ons == rule[0] and rule[1] == var:
+                        blocks[y][x] = rule[2]
+                        found_rule = True
+                        break
+                if found_rule:
                     break
-            if found_rule:
-                break
-        if not found_rule:
-            print('error: no rule found')
+            if not found_rule:
+                print('error: no rule found')
                     
-print(blocks)
-
-
-
-
+    print(blocks)
+    m = join(blocks)
+    it += 1
+    printm(m)
+    print('-----')
+    if it == 6:
+        print(countons(m))
+        break
