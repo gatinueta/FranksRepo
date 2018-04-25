@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soap:Body>
+        <sayHello xmlns="http://service.jaxws/">
+            <arg0 xsi:type="xsd:string">Frank</arg0>
+        </sayHello>
+    </soap:Body>
+</soap:Envelope>
