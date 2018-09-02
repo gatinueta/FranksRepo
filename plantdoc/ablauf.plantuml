@@ -1,6 +1,6 @@
 @startuml
-PROCESS_STATUS_DAY_UOW_TX -right-> SETA_OPENED_DAY
-PROCESS_STATUS_DAY_UOW_TX : Bedeutung
+[*] -right-> SETA_OPENED_DAY
+[*] : Tag eröffnet auc Client
 state "PROCESS.STATUS.DAY / UOW / TX" as PROCESS_STATUS_DAY_UOW_TX
 SETA_OPENED_DAY -left-> CETA_OPENED_UOW
 SETA_OPENED_DAY : Tag eröffnet auf Server

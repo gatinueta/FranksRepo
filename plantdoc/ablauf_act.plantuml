@@ -1,0 +1,167 @@
+@startuml
+|DAY / UOW / TX|
+:PROCESS.STATUS;
+note right
+  Bedeutung
+end note
+|DAY|
+:SETA.OPENED;
+note right
+  Tag eröffnet auf Server
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+end note
+|UOW|
+:SETA.NABA;
+note right
+  UOW abgeschlossen auf Server, NABA ausstehend
+end note
+|DAY|
+:SETA.NABA;
+note right
+  Tag abgeschlossen auf Server, NABA ausstehend
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+end note
+|DAY|
+:SETA.READY;
+note right
+  Tag abgeschlossen auf Server, bereit auf KR
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+end note
+|DAY|
+:CONSOLIDATION.RECEIVED;
+note right
+  Tagesabschluss empfangen auf KR
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+end note
+|UOW|
+:CONSOLIDATION.NOT_NEEDED;
+note right
+  UOW wird nicht weiter verarbeitet auf dem KR (Nicht produktiver Flow)
+end note
+|DAY|
+:CONSOLIDATION.VALIDATED;
+note right
+  Tag validiert auf KR
+end note
+|TX|
+:DAB_BW /DAB_URGENT_BW /DAB_GRAY /DAB_URGENT_GRAY /JURA.READY;
+note right
+  Belegbild bereit zum Senden an DAB / JURA
+end note
+|TX|
+:DAB / JURA.NOT_NEEDED;
+note right
+  Kein Belegbild an DAB / JURA notwendig
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+end note
+|DAY|
+:ARCH4.READY;
+note right
+  Kassenlogextrakt JURA bereit zum Versand
+end note
+|DAY|
+:CONSOLIDATION.WAIT_FOR_ACKS;
+note right
+  Warten auf Quittierungen (ISYMV, FORZA, DAB, JURA)
+end note
+|TX|
+:DAB.SENT;
+note right
+  Belegbild gesendet an DAB
+end note
+|DAY|
+:ARCH4.SENT;
+note right
+  Kassenlogextrakt gesendet an JURA
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+end note
+|DAY|
+:ARCH4.ACKD;
+note right
+  Alle Kassenlog-Extrakts quittiert von JURA
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+end note
+|UOW|
+:ISYMV / FORZA.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+end note
+|UOW|
+:ISYMV / FORZA.SENT;
+note right
+  Buchungsfile für UOW verschickt
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+end note
+|UOW|
+:ISYMV / FORZA.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+end note
+|DAY|
+:CONSOLIDATION.EOD;
+note right
+  Quittierungen für Tag komplett: Bereit für EOD
+end note
+@enduml

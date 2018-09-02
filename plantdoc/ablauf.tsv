@@ -11,19 +11,14 @@ CONSOLIDATION	RECEIVED	DAY	Tagesabschluss empfangen auf KR	ZvConsolidation
 CONSOLIDATION	VALIDATED	UOW	UOW (Vollständigkeit, md5 hash) validiert auf KR	ZvConsolidation
 CONSOLIDATION	NOT_NEEDED	UOW	UOW wird nicht weiter verarbeitet auf dem KR (Nicht produktiver Flow)	ZvConsolidation
 CONSOLIDATION	VALIDATED	DAY	Tag validiert auf KR	ZvConsolidation
--1	-	UOW		
 DAB_BW /DAB_URGENT_BW /DAB_GRAY /DAB_URGENT_GRAY /JURA	READY	TX	Belegbild bereit zum Senden an DAB / JURA	ZvConsolidation
 DAB / JURA	NOT_NEEDED	TX	Kein Belegbild an DAB / JURA notwendig	ZvConsolidation
 CONSOLIDATION	WAIT_IMAGE_ACK	UOW	Warten auf Bildversand DAB	ZvConsolidation
 ARCH4	READY	DAY	Kassenlogextrakt JURA bereit zum Versand	ZvConsolidation
 CONSOLIDATION	WAIT_FOR_ACKS	DAY	Warten auf Quittierungen (ISYMV, FORZA, DAB, JURA)	ZvConsolidation
--2	-	UOW		
 DAB	SENT	TX	Belegbild gesendet an DAB	IFC_DABBW_CBT
--3	-	UOW		
 ARCH4	SENT	DAY	Kassenlogextrakt gesendet an JURA	IFC_ARCH4_CBT
--4	-	UOW		
 DAB_BW	ACKD	TX	Belegbild von DAB quittiert	IFC_ACK_DAB_CBT
--5	-	UOW		
 ARCH4	ACKD	DAY	Alle Kassenlog-Extrakts quittiert von JURA	IFC_ACK_JURA_CBT
 CONSOLIDATION	IMAGES_CONFIRMED	UOW	Alle Bilder quittiert von DAB	ZvConsolidation
 CONSOLIDATION	WAIT_FOR_DAILY_CLOSING	UOW	Transaktionsversand: Warten auf Tagesabschluss	ZvConsolidation
