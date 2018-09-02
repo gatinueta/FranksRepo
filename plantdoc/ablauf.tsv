@@ -1,0 +1,38 @@
+PROCESS	STATUS	DAY / UOW / TX	Bedeutung	Wird geschrieben von IFC-Job / VIAP-Job
+SETA	OPENED	DAY	Tag eröffnet auf Server	SETA
+CETA	OPENED	UOW	UOW eröffnet auf Client	CETA
+CETA	CLOSED	UOW	UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)	CETA
+SETA	NABA	UOW	UOW abgeschlossen auf Server, NABA ausstehend	SETA
+SETA	NABA	DAY	Tag abgeschlossen auf Server, NABA ausstehend	SETA
+SETA	READY	UOW	UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR	SETA
+SETA	READY	DAY	Tag abgeschlossen auf Server, bereit auf KR	SETA
+CONSOLIDATION	RECEIVED	UOW	UOW empfangen auf KR	ZvConsolidation
+CONSOLIDATION	RECEIVED	DAY	Tagesabschluss empfangen auf KR	ZvConsolidation
+CONSOLIDATION	VALIDATED	UOW	UOW (Vollständigkeit, md5 hash) validiert auf KR	ZvConsolidation
+CONSOLIDATION	NOT_NEEDED	UOW	UOW wird nicht weiter verarbeitet auf dem KR (Nicht produktiver Flow)	ZvConsolidation
+CONSOLIDATION	VALIDATED	DAY	Tag validiert auf KR	ZvConsolidation
+-1	-	UOW		
+DAB_BW /DAB_URGENT_BW /DAB_GRAY /DAB_URGENT_GRAY /JURA	READY	TX	Belegbild bereit zum Senden an DAB / JURA	ZvConsolidation
+DAB / JURA	NOT_NEEDED	TX	Kein Belegbild an DAB / JURA notwendig	ZvConsolidation
+CONSOLIDATION	WAIT_IMAGE_ACK	UOW	Warten auf Bildversand DAB	ZvConsolidation
+ARCH4	READY	DAY	Kassenlogextrakt JURA bereit zum Versand	ZvConsolidation
+CONSOLIDATION	WAIT_FOR_ACKS	DAY	Warten auf Quittierungen (ISYMV, FORZA, DAB, JURA)	ZvConsolidation
+-2	-	UOW		
+DAB	SENT	TX	Belegbild gesendet an DAB	IFC_DABBW_CBT
+-3	-	UOW		
+ARCH4	SENT	DAY	Kassenlogextrakt gesendet an JURA	IFC_ARCH4_CBT
+-4	-	UOW		
+DAB_BW	ACKD	TX	Belegbild von DAB quittiert	IFC_ACK_DAB_CBT
+-5	-	UOW		
+ARCH4	ACKD	DAY	Alle Kassenlog-Extrakts quittiert von JURA	IFC_ACK_JURA_CBT
+CONSOLIDATION	IMAGES_CONFIRMED	UOW	Alle Bilder quittiert von DAB	ZvConsolidation
+CONSOLIDATION	WAIT_FOR_DAILY_CLOSING	UOW	Transaktionsversand: Warten auf Tagesabschluss	ZvConsolidation
+CONSOLIDATION	CREATE_PAYMENTS	UOW	Bereit für Transaktionsversand ISYMV/FORZA	ZvConsolidation
+ISYMV / FORZA	SEND_UOW	UOW	Payments für UOW bereit zum Senden	ZvConsolidation
+CONSOLIDATION	WAIT_FOR_PAYMENT_ACK	UOW	Warten auf Quittierung von FORZA / ISYMV	ZvConsolidation
+ISYMV / FORZA	SENT	UOW	Buchungsfile für UOW verschickt	ZvTxIsymv / ZvTxForza
+JURA	SENT	TX	Belegbild an JURA verschickt	IFC_JURA_CBT
+ISYMV / FORZA	ACKD	UOW	Alle Buchungsfiles für UOW bestätigt.	ZvAcknowledge
+JURA	ACKD	TX	Belegbild von JURA quittiert	IFC_ACK_JURA_CBT
+CONSOLIDATION	UOW_CONFIRMED	UOW	Buchungen von UOW quittiert	ZvConsolidation
+CONSOLIDATION	EOD	DAY	Quittierungen für Tag komplett: Bereit für EOD	ZvConsolidation
