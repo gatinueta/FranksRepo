@@ -1,9 +1,4 @@
 @startuml
-|DAY / UOW / TX|
-:PROCESS.STATUS;
-note right
-  Bedeutung
-end note
 |DAY|
 :SETA.OPENED;
 note right
@@ -20,20 +15,23 @@ note right
   UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
 end note
 |UOW|
-:SETA.NABA;
-note right
-  UOW abgeschlossen auf Server, NABA ausstehend
-end note
-|DAY|
-:SETA.NABA;
-note right
-  Tag abgeschlossen auf Server, NABA ausstehend
-end note
-|UOW|
+if (NABA ausstehend) then (ja)
+	:SETA.NABA;
+	note right
+	  UOW abgeschlossen auf Server, NABA ausstehend
+	end note
+endif
 :SETA.READY;
 note right
   UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
 end note
+|DAY|
+if (NABA ausstehend) then (ja)
+	:SETA.NABA;
+	note right
+	  Tag abgeschlossen auf Server, NABA ausstehend
+	end note
+endif
 |DAY|
 :SETA.READY;
 note right
@@ -59,25 +57,27 @@ end note
 note right
   UOW wird nicht weiter verarbeitet auf dem KR (Nicht produktiver Flow)
 end note
-|DAY|
-:CONSOLIDATION.VALIDATED;
-note right
-  Tag validiert auf KR
-end note
 |TX|
-:DAB_BW /DAB_URGENT_BW /DAB_GRAY /DAB_URGENT_GRAY /JURA.READY;
-note right
-  Belegbild bereit zum Senden an DAB / JURA
-end note
-|TX|
-:DAB / JURA.NOT_NEEDED;
-note right
-  Kein Belegbild an DAB / JURA notwendig
-end note
+if (Belegbild senden an JURA / DAB notwendig) then (ja)
+	:DAB_BW /DAB_URGENT_BW /DAB_GRAY /DAB_URGENT_GRAY /JURA.READY;
+	note right
+	  Belegbild bereit zum Senden an DAB / JURA
+	end note
+else (nein)
+	:DAB / JURA.NOT_NEEDED;
+	note right
+	  Kein Belegbild an DAB / JURA notwendig
+	end note
+endif
 |UOW|
 :CONSOLIDATION.WAIT_IMAGE_ACK;
 note right
   Warten auf Bildversand DAB
+end note
+|DAY|
+:CONSOLIDATION.VALIDATED;
+note right
+  Tag validiert auf KR
 end note
 |DAY|
 :ARCH4.READY;
