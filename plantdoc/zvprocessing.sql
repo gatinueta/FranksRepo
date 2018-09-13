@@ -7,6 +7,8 @@ CREATE TABLE zvprocessing (
 
 insert into zvprocessing ( process, status, unit, description ) values ('SETA','OPENED','DAY','Tag eröffnet auf Server');
 insert into zvprocessing ( process, status, unit, description ) values ('CETA','OPENED','UOW','UOW eröffnet auf Client');
+insert into zvprocessing ( process, status, unit, description ) values ('SETA','OPENED','UOW','UOW eröffnet auf Server');
+insert into zvprocessing ( process, status, unit, description ) values ('SETA','CLOSED','UOW','UOW abgeschlossen auf Server');
 insert into zvprocessing ( process, status, unit, description ) values ('CETA','CLOSED','UOW','UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)');
 insert into zvprocessing ( process, status, unit, description ) values ('SETA','NABA','UOW','UOW abgeschlossen auf Server, NABA ausstehend');
 insert into zvprocessing ( process, status, unit, description ) values ('SETA','NABA','DAY','Tag abgeschlossen auf Server, NABA ausstehend');

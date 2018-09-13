@@ -8,39 +8,1686 @@ end note
 :CETA.OPENED;
 note right
   UOW eröffnet auf Client
+  ====
+   ws_nr=80,uow_id=1
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=1
 end note
 |UOW|
 :CETA.CLOSED;
 note right
   UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=80,uow_id=1
 end note
 |UOW|
-if (NABA ausstehend) then (ja)
-	:SETA.NABA;
-	note right
-	  UOW abgeschlossen auf Server, NABA ausstehend
-	end note
-endif
 :SETA.READY;
 note right
   UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
-end note
-|DAY|
-if (NABA ausstehend) then (ja)
-	:SETA.NABA;
-	note right
-	  Tag abgeschlossen auf Server, NABA ausstehend
-	end note
-endif
-|DAY|
-:SETA.READY;
-note right
-  Tag abgeschlossen auf Server, bereit auf KR
+  ====
+   ws_nr=80,uow_id=1
 end note
 |UOW|
 :CONSOLIDATION.RECEIVED;
 note right
   UOW empfangen auf KR
+  ====
+   ws_nr=80,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=80,uow_id=1
+end note
+|TX|
+:DAB_BW.NOT_NEEDED;
+note right
+  Kein Belegbild an DAB notwendig
+  ====
+   ws_nr=80,uow_id=1, doc_id=1
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=80,uow_id=1, doc_id=1
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=80,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=80,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=80,uow_id=1
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=80,uow_id=2
+end note
+|TX|
+:DAB_BW.NOT_NEEDED;
+note right
+  Kein Belegbild an DAB notwendig
+  ====
+   ws_nr=80,uow_id=2, doc_id=1
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=80,uow_id=2, doc_id=1
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:SETA.NABA;
+note right
+  UOW abgeschlossen auf Server, NABA ausstehend
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=1
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=1, doc_id=1
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=1, doc_id=1
+end note
+|TX|
+:DAB_BW.NOT_NEEDED;
+note right
+  Kein Belegbild an DAB notwendig
+  ====
+   ws_nr=2,uow_id=1, doc_id=2
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=1, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=1
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=1, doc_id=1
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=2
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=2, doc_id=1
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=2, doc_id=1
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=2, doc_id=2
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=2, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=2
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=2, doc_id=1
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=2, doc_id=2
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=80,uow_id=3
+end note
+|TX|
+:DAB_BW.NOT_NEEDED;
+note right
+  Kein Belegbild an DAB notwendig
+  ====
+   ws_nr=80,uow_id=3, doc_id=1
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=80,uow_id=3, doc_id=1
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:SETA.NABA;
+note right
+  UOW abgeschlossen auf Server, NABA ausstehend
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=3
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=3, doc_id=1
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=3, doc_id=1
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=3, doc_id=2
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=3, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=3
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=3, doc_id=1
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=3, doc_id=2
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=501
+end note
+|TX|
+:DAB_URGENT_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=501, doc_id=2
+end note
+|TX|
+:DAB_URGENT_GRAY.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=501, doc_id=2
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=501, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=501
+end note
+|TX|
+:DAB_URGENT_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=501, doc_id=2
+end note
+|TX|
+:DAB_URGENT_GRAY.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=501, doc_id=2
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=301
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=4, doc_id=1
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=4, doc_id=1
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=4, doc_id=2
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=4, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=4
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=301, doc_id=2
+end note
+|TX|
+:DAB_GRAY.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=301, doc_id=2
+end note
+|TX|
+:JURA.NOT_NEEDED;
+note right
+  Kein Belegbild an JURA notwendig
+  ====
+   ws_nr=2,uow_id=301, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=301
+end note
+|TX|
+:DAB_GRAY.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=301, doc_id=2
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=4, doc_id=1
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=4, doc_id=2
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=301, doc_id=2
+end note
+|UOW|
+:SETA.OPENED;
+note right
+  UOW eröffnet auf Server
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=5
+end note
+|TX|
+:DAB_URGENT_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=501, doc_id=2
+end note
+|TX|
+:DAB_URGENT_GRAY.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=501, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=302
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=2, doc_id=1
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=2, doc_id=1
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=2, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=2, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=301, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=301, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=4, doc_id=1
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=4, doc_id=1
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=4, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=4, doc_id=2
+end note
+|TX|
+:DAB_GRAY.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=301, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=3, doc_id=1
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=3, doc_id=1
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=3, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=3, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=1, doc_id=1
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=1, doc_id=1
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=502
+end note
+|TX|
+:DAB_URGENT_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=502, doc_id=2
+end note
+|TX|
+:DAB_URGENT_GRAY.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=502, doc_id=2
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=502, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=502
+end note
+|TX|
+:DAB_URGENT_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=502, doc_id=2
+end note
+|TX|
+:DAB_URGENT_GRAY.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=502, doc_id=2
+end note
+|TX|
+:DAB_URGENT_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=502, doc_id=2
+end note
+|TX|
+:DAB_URGENT_GRAY.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=502, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:CETA.OPENED;
+note right
+  UOW eröffnet auf Client
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=503
+end note
+|TX|
+:DAB_URGENT_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=503, doc_id=2
+end note
+|TX|
+:DAB_URGENT_GRAY.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=503, doc_id=2
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=503, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=503
+end note
+|TX|
+:DAB_URGENT_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=503, doc_id=2
+end note
+|TX|
+:DAB_URGENT_GRAY.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=503, doc_id=2
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=5
+end note
+|TX|
+:DAB_URGENT_GRAY.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=503, doc_id=2
+end note
+|TX|
+:DAB_URGENT_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=503, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:CETA.CLOSED;
+note right
+  UOW abgeschlossen auf Client (Stapelabschluss, Ende Programm)
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=2,uow_id=701
+end note
+|TX|
+:DAB_BW.NOT_NEEDED;
+note right
+  Kein Belegbild an DAB notwendig
+  ====
+   ws_nr=2,uow_id=5, doc_id=1
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=2,uow_id=5, doc_id=1
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=5
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=302, doc_id=2
+end note
+|TX|
+:DAB_GRAY.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=2,uow_id=302, doc_id=2
+end note
+|TX|
+:JURA.NOT_NEEDED;
+note right
+  Kein Belegbild an JURA notwendig
+  ====
+   ws_nr=2,uow_id=302, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=2,uow_id=701
+end note
+|TX|
+:DAB_GRAY.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=302, doc_id=2
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=2,uow_id=302, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=2,uow_id=701
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=302, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=302, doc_id=2
+end note
+|TX|
+:DAB_GRAY.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=2,uow_id=302, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=2,uow_id=302
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=1, doc_id=1
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=1, doc_id=2
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=2, doc_id=1
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=2, doc_id=2
+end note
+|UOW|
+:SETA.CLOSED;
+note right
+  UOW abgeschlossen auf Server
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:SETA.READY;
+note right
+  UOW abgeschlossen auf Server, Alle UOW-Daten bereit, werden gesendet an KR
+  ====
+   ws_nr=80,uow_id=4
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=3, doc_id=1
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=3, doc_id=2
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=4, doc_id=1
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=4, doc_id=2
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=5, doc_id=1
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=501, doc_id=2
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=502, doc_id=2
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=2,uow_id=503, doc_id=2
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=80,uow_id=1, doc_id=1
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=80,uow_id=2, doc_id=1
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=80,uow_id=3, doc_id=1
+end note
+|UOW|
+:CONSOLIDATION.RECEIVED;
+note right
+  UOW empfangen auf KR
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.VALIDATED;
+note right
+  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  ====
+   ws_nr=80,uow_id=4
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=80,uow_id=4, doc_id=1
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=80,uow_id=4, doc_id=1
+end note
+|TX|
+:DAB_BW.READY;
+note right
+  Belegbild bereit zum Senden an DAB
+  ====
+   ws_nr=80,uow_id=4, doc_id=2
+end note
+|TX|
+:JURA.READY;
+note right
+  Belegbild bereit zum Senden an JURA
+  ====
+   ws_nr=80,uow_id=4, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_IMAGE_ACK;
+note right
+  Warten auf Bildversand DAB
+  ====
+   ws_nr=80,uow_id=4
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=80,uow_id=4, doc_id=1
+end note
+|TX|
+:DAB_BW.SENT;
+note right
+  Belegbild gesendet an DAB
+  ====
+   ws_nr=80,uow_id=4, doc_id=2
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=80,uow_id=4, doc_id=1
+end note
+|TX|
+:JURA.SENT;
+note right
+  Belegbild an JURA verschickt
+  ====
+   ws_nr=80,uow_id=4, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=80,uow_id=4, doc_id=1
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=80,uow_id=4, doc_id=1
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=80,uow_id=4, doc_id=2
+end note
+|TX|
+:DAB_BW.ACKD;
+note right
+  Belegbild von DAB quittiert
+  ====
+   ws_nr=80,uow_id=4, doc_id=2
+end note
+|UOW|
+:CONSOLIDATION.IMAGES_CONFIRMED;
+note right
+  Alle Bilder quittiert von DAB
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
+note right
+  Transaktionsversand: Warten auf Tagesabschluss
+  ====
+   ws_nr=80,uow_id=4
+end note
+|DAY|
+:SETA.READY;
+note right
+  Tag abgeschlossen auf Server, bereit auf KR
 end note
 |DAY|
 :CONSOLIDATION.RECEIVED;
@@ -48,36 +1695,261 @@ note right
   Tagesabschluss empfangen auf KR
 end note
 |UOW|
-:CONSOLIDATION.VALIDATED;
+:CONSOLIDATION.CREATE_PAYMENTS;
 note right
-  UOW (Vollständigkeit, md5 hash) validiert auf KR
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=80,uow_id=1
 end note
 |UOW|
-:CONSOLIDATION.NOT_NEEDED;
+:CONSOLIDATION.CREATE_PAYMENTS;
 note right
-  UOW wird nicht weiter verarbeitet auf dem KR (Nicht produktiver Flow)
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=1
 end note
-|TX|
-if (Belegbild senden an JURA / DAB notwendig) then (ja)
-	:DAB_BW /DAB_URGENT_BW /DAB_GRAY /DAB_URGENT_GRAY /JURA.READY;
-	note right
-	  Belegbild bereit zum Senden an DAB / JURA
-	end note
-else (nein)
-	:DAB / JURA.NOT_NEEDED;
-	note right
-	  Kein Belegbild an DAB / JURA notwendig
-	end note
-endif
 |UOW|
-:CONSOLIDATION.WAIT_IMAGE_ACK;
+:CONSOLIDATION.CREATE_PAYMENTS;
 note right
-  Warten auf Bildversand DAB
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.CREATE_PAYMENTS;
+note right
+  Bereit für Transaktionsversand ISYMV/FORZA
+  ====
+   ws_nr=2,uow_id=301
 end note
 |DAY|
 :CONSOLIDATION.VALIDATED;
 note right
   Tag validiert auf KR
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=80,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=80,uow_id=1
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:FORZA.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:ISYMV.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:FORZA.SEND_UOW;
+note right
+  Payments für UOW bereit zum Senden
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
+note right
+  Warten auf Quittierung von FORZA / ISYMV
+  ====
+   ws_nr=2,uow_id=301
 end note
 |DAY|
 :ARCH4.READY;
@@ -89,79 +1961,416 @@ end note
 note right
   Warten auf Quittierungen (ISYMV, FORZA, DAB, JURA)
 end note
-|TX|
-:DAB.SENT;
+|UOW|
+:ISYMV.NOT_NEEDED;
 note right
-  Belegbild gesendet an DAB
+  Kein Buchungsfile für ISYMV notwendig (leer oder nichtproduktiver Flow)
+  ====
+   ws_nr=80,uow_id=1
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:ISYMV.NOT_NEEDED;
+note right
+  Kein Buchungsfile für ISYMV notwendig (leer oder nichtproduktiver Flow)
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:ISYMV.NOT_NEEDED;
+note right
+  Kein Buchungsfile für ISYMV notwendig (leer oder nichtproduktiver Flow)
+  ====
+   ws_nr=80,uow_id=2
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:ISYMV.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=80,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=80,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=80,uow_id=2
 end note
 |DAY|
 :ARCH4.SENT;
 note right
   Kassenlogextrakt gesendet an JURA
 end note
-|TX|
-:DAB_BW.ACKD;
+|UOW|
+:FORZA.SENT;
 note right
-  Belegbild von DAB quittiert
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:FORZA.SENT;
+note right
+  Buchungsfile für UOW verschickt
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:FORZA.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:FORZA.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=302
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=301
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=4
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:ISYMV.ACKD;
+note right
+  Alle Buchungsfiles für UOW bestätigt.
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=1
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=80,uow_id=4
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=5
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=701
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=2
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=503
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=501
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=502
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=3
+end note
+|UOW|
+:CONSOLIDATION.UOW_CONFIRMED;
+note right
+  Buchungen von UOW quittiert
+  ====
+   ws_nr=2,uow_id=4
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=1, doc_id=2
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=1, doc_id=1
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=3, doc_id=2
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=3, doc_id=1
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=2, doc_id=1
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=2, doc_id=2
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=5, doc_id=1
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=501, doc_id=2
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=502, doc_id=2
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=503, doc_id=2
 end note
 |DAY|
 :ARCH4.ACKD;
 note right
   Alle Kassenlog-Extrakts quittiert von JURA
 end note
-|UOW|
-:CONSOLIDATION.IMAGES_CONFIRMED;
-note right
-  Alle Bilder quittiert von DAB
-end note
-|UOW|
-:CONSOLIDATION.WAIT_FOR_DAILY_CLOSING;
-note right
-  Transaktionsversand: Warten auf Tagesabschluss
-end note
-|UOW|
-:CONSOLIDATION.CREATE_PAYMENTS;
-note right
-  Bereit für Transaktionsversand ISYMV/FORZA
-end note
-|UOW|
-:ISYMV / FORZA.SEND_UOW;
-note right
-  Payments für UOW bereit zum Senden
-end note
-|UOW|
-:CONSOLIDATION.WAIT_FOR_PAYMENT_ACK;
-note right
-  Warten auf Quittierung von FORZA / ISYMV
-end note
-|UOW|
-:ISYMV / FORZA.SENT;
-note right
-  Buchungsfile für UOW verschickt
-end note
 |TX|
-:JURA.SENT;
+:JURA.ACKD;
 note right
-  Belegbild an JURA verschickt
-end note
-|UOW|
-:ISYMV / FORZA.ACKD;
-note right
-  Alle Buchungsfiles für UOW bestätigt.
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=80,uow_id=1, doc_id=1
 end note
 |TX|
 :JURA.ACKD;
 note right
   Belegbild von JURA quittiert
+  ====
+   ws_nr=80,uow_id=2, doc_id=1
 end note
-|UOW|
-:CONSOLIDATION.UOW_CONFIRMED;
+|TX|
+:JURA.ACKD;
 note right
-  Buchungen von UOW quittiert
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=80,uow_id=3, doc_id=1
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=4, doc_id=1
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=2,uow_id=4, doc_id=2
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=80,uow_id=4, doc_id=1
+end note
+|TX|
+:JURA.ACKD;
+note right
+  Belegbild von JURA quittiert
+  ====
+   ws_nr=80,uow_id=4, doc_id=2
 end note
 |DAY|
 :CONSOLIDATION.EOD;
 note right
   Quittierungen für Tag komplett: Bereit für EOD
+end note
+|DAY|
+:SUMMARIZATION.DONE;
+note right
+  ZV_KUMULIERT berechnet auf DSS
 end note
 @enduml
