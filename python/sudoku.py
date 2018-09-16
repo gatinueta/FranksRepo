@@ -1,3 +1,6 @@
+import random
+from bs4 import BeautifulSoup
+
 board = [
       '5   32  8',
       '   8  4  ',
@@ -47,7 +50,6 @@ def printBoard(b):
             print('-' * 14)
     print( '-' * 14)
 
-printBoard(board)
 
 def findPoss(b, p):
     sx = p.x - (p.x % 3)
@@ -72,7 +74,8 @@ def solve(b):
     if p is None:
         printBoard(b)
         return True
-    poss = findPoss(b, p)
+    poss = list(findPoss(b, p))
+    random.shuffle(poss)
     for e in poss:
         b[p.y][p.x] = e
         #print(str(p.y) + ' is now ' + str(b[p.y]))
@@ -82,5 +85,38 @@ def solve(b):
     b[p.y][p.x] = ' '
     return False
 
-solve(board)
+def create():
+    row =  [' '] * 9;
+    b = [ list(row) for i in range(9) ]
+    solve(b)
 
+def printBoardHtml(b, filename):
+    html_doc = open('sudoku-board.html', 'r')
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    for cellid in range(81):
+        col = cellid % 9
+        row = cellid / 9;
+        tag = soup.find(id='cell-{}'.format(cellid))
+        tag['value'] = b[row][col]
+    f = open(filename, 'w')
+    f.write(soup.prettify())
+    f.close()
+    
+'''
+        idtags = [ idtag for idtag in attrs if idtag[0] == 'id' ]
+        if len(idtags) > 0 and idtags[0][1].startswith('cell'):
+           m = re.search('\\d+', idtags[0][1]) 
+           cellid = int(m.group())
+           row = cellid % 9
+           col = cellid / 9;
+           val = b[row][col]
+
+'''
+
+printBoardHtml(board, 'sudoku-board-riddle.html')
+
+if solve(board):
+    printBoardHtml(board, 'sudoku-board-solution.html')
+
+
+#create()
