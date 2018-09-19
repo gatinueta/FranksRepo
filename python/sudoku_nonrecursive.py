@@ -101,14 +101,19 @@ def solve_nonrecursive(b, stack):
         p = findempty(b)
         if p is None:
             printBoard(b)
-            return True
-        poss = list(findPoss(b, p))
+            poss = []
+#            return True
+        else:
+            poss = list(findPoss(b, p))
         if len(poss) > 0:
             random.shuffle(poss)
             stack.append(StackElem(p, poss, 0))
         else:
             while(True):
+                if len(stack) == 0:
+                    return;
                 e = stack.pop()
+                b[e.p.y][e.p.x] = ' '
                 if e.pi < len(e.poss)-1:
                     break
 
