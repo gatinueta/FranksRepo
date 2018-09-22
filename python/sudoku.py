@@ -83,7 +83,58 @@ def findPoss(b, p):
 
     return s
 
-    
+class StackElem:
+    def __init__(self, p, poss, pi):
+        self.p = p
+        self.poss = poss
+        self.pi = pi
+    def __str__(self):
+        return "p = {}, poss = {}, pi = {}".format( self.p, self.poss, self.pi)
+
+def print_stack(stack):
+    for i in stack:
+        print(str(i))
+    print()
+
+def solve_nonrecursive(b, stack, stopIfFound):
+    while True:
+        # check if a solution has been found. print it.
+        # find options to advance, store into poss array.
+        # push these options on the stack.
+        # if no options can be found, backtrack, i.e. pop
+        # from stack as long as there are more options..
+        # advance to the next option.
+        p = findempty(b)
+        if p is None:
+            printBoard(b)
+            poss = []
+            if stopIfFound:
+                return True
+        else:
+            poss = list(findPoss(b, p))
+        if len(poss) > 0:
+            random.shuffle(poss)
+            stack.append(StackElem(p, poss, 0))
+        else:
+            while(True):
+                if len(stack) == 0:
+                    # we're done. there's no (more) solutions.
+                    return False;
+                e = stack.pop()
+                b[e.p.y][e.p.x] = ' '
+                if e.pi < len(e.poss)-1:
+                    break
+
+            e.pi += 1
+            stack.append(e)
+        # now the last stack element contains the next option to be investigated.
+        # apply it to the board.
+        #print_stack(stack)
+        e = stack[-1]
+        b[e.p.y][e.p.x] = e.poss[e.pi]
+
+
+
 def solve(b):
     p = findempty(b)
     if p is None:
@@ -120,11 +171,10 @@ def printBoardHtml(b, filename):
     f = open(filename, 'w')
     f.write(soup.prettify())
     f.close()
+    print('saved to ' + filename)
     
 printBoardHtml(board, 'sudoku-board-riddle.html')
 
-if solve(board):
-    printBoardHtml(board, 'sudoku-board-solution.html')
-
-
+solve_nonrecursive(board, [], True)
+printBoardHtml(board, 'sudoku-board-solution.html');
 #create()
