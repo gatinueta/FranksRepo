@@ -1,0 +1,244 @@
+<!doctype html>
+<title>JavaScript Example</title>
+<link rel="stylesheet" href="https://unpkg.com/sakura.css@1.0.0/css/normalize.css">
+<link rel="stylesheet" href="https://unpkg.com/sakura.css@1.0.0/css/sakura-earthly.css">
+<style>
+  ul { margin: 0; padding: 0; display: flex; list-style-type: none; }
+  li > * { padding: 1em; }
+  li.active > a { color: #5e5e5e; border-bottom: 2px solid #4a4a4a; }
+  form { display: flex; }
+  label > input { width: 3em; }
+  form > * { padding-right: 1em; }
+  #result { font-weight: bold; }
+
+  html, body {
+    background-color: #FAFAFA
+  }
+
+  table {
+    border: 2px solid #000000;
+  }
+
+  td {
+    border: 1px solid #000000;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  input {
+    color: #000000;
+    padding: 0;
+    border: 0;
+    text-align: center;
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    background-color: #FFFFFF;
+    outline: none;
+  }
+
+  input:disabled {
+    background-color: #EEEEEE;
+  }
+
+  #cell_0,  #cell_1,  #cell_2  { border-top:    2px solid #000000; }
+  #cell_2,  #cell_11, #cell_20 { border-right:  2px solid #000000; }
+  #cell_18, #cell_19, #cell_20 { border-bottom: 2px solid #000000; }
+  #cell_0,  #cell_9,  #cell_18 { border-left:   2px solid #000000; }
+
+  #cell_3,  #cell_4,  #cell_5  { border-top:    2px solid #000000; }
+  #cell_5,  #cell_14, #cell_23 { border-right:  2px solid #000000; }
+  #cell_21, #cell_22, #cell_23 { border-bottom: 2px solid #000000; }
+  #cell_3,  #cell_12, #cell_21 { border-left:   2px solid #000000; }
+
+  #cell_6,  #cell_7,  #cell_8  { border-top:    2px solid #000000; }
+  #cell_8,  #cell_17, #cell_26 { border-right:  2px solid #000000; }
+  #cell_24, #cell_25, #cell_26 { border-bottom: 2px solid #000000; }
+  #cell_6,  #cell_15, #cell_24 { border-left:   2px solid #000000; }
+
+  #cell_27, #cell_28, #cell_29 { border-top:    2px solid #000000; }
+  #cell_29, #cell_38, #cell_47 { border-right:  2px solid #000000; }
+  #cell_45, #cell_46, #cell_47 { border-bottom: 2px solid #000000; }
+  #cell_27, #cell_36, #cell_45 { border-left:   2px solid #000000; }
+
+  #cell_30, #cell_31, #cell_32 { border-top:    2px solid #000000; }
+  #cell_32, #cell_41, #cell_50 { border-right:  2px solid #000000; }
+  #cell_48, #cell_49, #cell_50 { border-bottom: 2px solid #000000; }
+  #cell_30, #cell_39, #cell_48 { border-left:   2px solid #000000; }
+
+  #cell_33, #cell_34, #cell_35 { border-top:    2px solid #000000; }
+  #cell_35, #cell_44, #cell_53 { border-right:  2px solid #000000; }
+  #cell_51, #cell_52, #cell_53 { border-bottom: 2px solid #000000; }
+  #cell_33, #cell_42, #cell_51 { border-left:   2px solid #000000; }
+
+  #cell_54, #cell_55, #cell_56 { border-top:    2px solid #000000; }
+  #cell_56, #cell_65, #cell_74 { border-right:  2px solid #000000; }
+  #cell_72, #cell_73, #cell_74 { border-bottom: 2px solid #000000; }
+  #cell_54, #cell_63, #cell_72 { border-left:   2px solid #000000; }
+
+  #cell_57, #cell_58, #cell_59 { border-top:    2px solid #000000; }
+  #cell_59, #cell_68, #cell_77 { border-right:  2px solid #000000; }
+  #cell_75, #cell_76, #cell_77 { border-bottom: 2px solid #000000; }
+  #cell_57, #cell_66, #cell_75 { border-left:   2px solid #000000; }
+
+  #cell_60, #cell_61, #cell_62 { border-top:    2px solid #000000; }
+  #cell_62, #cell_71, #cell_80 { border-right:  2px solid #000000; }
+  #cell_78, #cell_79, #cell_80 { border-bottom: 2px solid #000000; }
+  #cell_60, #cell_69, #cell_78 { border-left:   2px solid #000000; }
+
+</style>
+<ul>
+  <li><span>Type:</span>
+  <li class="{% if js == 'plain' %}active{% endif %}">
+    <a href="{{ url_for('index', js='plain') }}">Plain</a>
+  <li class="{% if js == 'fetch' %}active{% endif %}">
+    <a href="{{ url_for('index', js='fetch') }}">Fetch</a>
+  <li class="{% if js == 'jquery' %}active{% endif %}">
+    <a href="{{ url_for('index', js='jquery') }}">jQuery</a>
+</ul>
+<hr>
+<p>{% block intro %}{% endblock %}</p>
+<hr>
+<div class="container">
+
+  <h1>HTML Sudoku Board</h1>
+
+  <table id="grid">
+
+    <tr>
+      <td><input id="cell_0"  type="text" value="5" disabled></td>
+      <td><input id="cell_1"  type="text" value="3" disabled></td>
+      <td><input id="cell_2"  type="text"></td>
+
+      <td><input id="cell_3"  type="text"></td>
+      <td><input id="cell_4"  type="text" value="7" disabled></td>
+      <td><input id="cell_5"  type="text"></td>
+
+      <td><input id="cell_6"  type="text"></td>
+      <td><input id="cell_7"  type="text"></td>
+      <td><input id="cell_8"  type="text"></td>
+    </tr>
+
+    <tr>
+      <td><input id="cell_9"  type="text" value="6" disabled></td>
+      <td><input id="cell_10" type="text"></td>
+      <td><input id="cell_11" type="text"></td>
+
+      <td><input id="cell_12" type="text" value="1" disabled></td>
+      <td><input id="cell_13" type="text" value="9" disabled></td>
+      <td><input id="cell_14" type="text" value="5" disabled></td>
+
+      <td><input id="cell_15" type="text"></td>
+      <td><input id="cell_16" type="text"></td>
+      <td><input id="cell_17" type="text"></td>
+    </tr>
+
+    <tr>
+      <td><input id="cell_18" type="text"></td>
+      <td><input id="cell_19" type="text" value="9" disabled></td>
+      <td><input id="cell_20" type="text" value="8" disabled></td>
+
+      <td><input id="cell_21" type="text"></td>
+      <td><input id="cell_22" type="text"></td>
+      <td><input id="cell_23" type="text"></td>
+
+      <td><input id="cell_24" type="text"></td>
+      <td><input id="cell_25" type="text" value="6" disabled></td>
+      <td><input id="cell_26" type="text"></td>
+    </tr>
+
+    <tr>
+      <td><input id="cell_27" type="text" value="8" disabled></td>
+      <td><input id="cell_28" type="text"></td>
+      <td><input id="cell_29" type="text"></td>
+
+      <td><input id="cell_30" type="text"></td>
+      <td><input id="cell_31" type="text" value="6" disabled></td>
+      <td><input id="cell_32" type="text"></td>
+
+      <td><input id="cell_33" type="text"></td>
+      <td><input id="cell_34" type="text"></td>
+      <td><input id="cell_35" type="text" value="3" disabled></td>
+    </tr>
+
+    <tr>
+      <td><input id="cell_36" type="text" value="4" disabled></td>
+      <td><input id="cell_37" type="text"></td>
+      <td><input id="cell_38" type="text"></td>
+
+      <td><input id="cell_39" type="text" value="8" disabled></td>
+      <td><input id="cell_40" type="text"></td>
+      <td><input id="cell_41" type="text" value="3" disabled></td>
+
+      <td><input id="cell_42" type="text"></td>
+      <td><input id="cell_43" type="text"></td>
+      <td><input id="cell_44" type="text" value="1" disabled></td>
+    </tr>
+
+    <tr>
+      <td><input id="cell_45" type="text" value="7" disabled></td>
+      <td><input id="cell_46" type="text"></td>
+      <td><input id="cell_47" type="text"></td>
+
+      <td><input id="cell_48" type="text"></td>
+      <td><input id="cell_49" type="text" value="2" disabled></td>
+      <td><input id="cell_50" type="text"></td>
+
+      <td><input id="cell_51" type="text"></td>
+      <td><input id="cell_52" type="text"></td>
+      <td><input id="cell_53" type="text" value="6" disabled></td>
+    </tr>
+
+    <tr>
+      <td><input id="cell_54" type="text"></td>
+      <td><input id="cell_55" type="text" value="6" disabled></td>
+      <td><input id="cell_56" type="text"></td>
+
+      <td><input id="cell_57" type="text"></td>
+      <td><input id="cell_58" type="text"></td>
+      <td><input id="cell_59" type="text"></td>
+
+      <td><input id="cell_60" type="text" value="2" disabled></td>
+      <td><input id="cell_61" type="text" value="8" disabled></td>
+      <td><input id="cell_62" type="text"></td>
+    </tr>
+
+    <tr>
+      <td><input id="cell_63" type="text"></td>
+      <td><input id="cell_64" type="text"></td>
+      <td><input id="cell_65" type="text"></td>
+
+      <td><input id="cell_66" type="text" value="4" disabled></td>
+      <td><input id="cell_67" type="text" value="1" disabled></td>
+      <td><input id="cell_68" type="text" value="9" disabled></td>
+
+      <td><input id="cell_69" type="text"></td>
+      <td><input id="cell_70" type="text"></td>
+      <td><input id="cell_71" type="text" value="5" disabled></td>
+    </tr>
+
+    <tr>
+      <td><input id="cell_72" type="text"></td>
+      <td><input id="cell_73" type="text"></td>
+      <td><input id="cell_74" type="text"></td>
+
+      <td><input id="cell_75" type="text"></td>
+      <td><input id="cell_76" type="text" value="8" disabled></td>
+      <td><input id="cell_77" type="text"></td>
+
+      <td><input id="cell_78" type="text"></td>
+      <td><input id="cell_79" type="text" value="7" disabled></td>
+      <td><input id="cell_80" type="text" value="9" disabled></td>
+    </tr>
+
+  </table>
+
+</div>
+<form id="calc">
+  <label>a <input name="a"></label>
+  <span>+</span>
+  <label>b <input name="b"></label>
+  <input type="submit" value="Calculate">
+</form>
+<span>= <span id="result"></span></span>
+{% block script %}{% endblock %}
