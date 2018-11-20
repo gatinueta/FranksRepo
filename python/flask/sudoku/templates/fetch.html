@@ -36,13 +36,15 @@
     function addShow(data) {
       var span = document.getElementById('result');
       span.innerText = data.result;
-      if (result != 0) {
+      if (data.result != 0) {
         setTimeout(addAuto, data.result);
       }
       for (var property in data) {
         if (data.hasOwnProperty(property)) {
           var el = document.getElementById(property);
-          el.setAttribute("value", data[property])
+          if (el) {
+            el.setAttribute("value", data[property])
+          }
         }
       }
     }

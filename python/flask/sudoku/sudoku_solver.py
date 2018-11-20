@@ -113,9 +113,10 @@ def print_stack(stack):
         print(str(i))
     print()
 
-def solve_nonrecursive(b, stack, stopIfFound):
+def solve_nonrecursive(b, stack, stopIfFound, doYield=False):
     while True:
-        yield b
+        if doYield:
+            yield b
         # check if a solution has been found. print it.
         # find options to advance, store into poss array.
         # push these options on the stack.
@@ -125,6 +126,7 @@ def solve_nonrecursive(b, stack, stopIfFound):
         p = findempty(b)
         if p is None:
             #printBoard(b)
+            print('found solution')
             poss = []
             if stopIfFound:
                 return
@@ -137,6 +139,7 @@ def solve_nonrecursive(b, stack, stopIfFound):
             while(True):
                 if len(stack) == 0:
                     # we're done. there's no (more) solutions.
+                    print('no (more) solution')
                     return
                 e = stack.pop()
                 b[e.p.y][e.p.x] = ' '
@@ -158,10 +161,14 @@ def create():
 
 g = None
 
+def solve_rest():
+    solve_nonrecursive(board, [], True)
+    return board
+
 def solve_next():
     global g
     if g is None:
-        g = solve_nonrecursive(board, [], True)
+        g = solve_nonrecursive(board, [], True, True)
     return next(g)
 
 #while(True):
