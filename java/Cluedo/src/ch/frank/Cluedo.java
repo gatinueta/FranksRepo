@@ -72,6 +72,8 @@ public class Cluedo {
 	public static void main(String[] args) {
 		Cluedo game = new Cluedo();
 		game.init();
+		FieldPosParser parser = new FieldPosParser();
+		parser.toJson();
 	}
 	
 

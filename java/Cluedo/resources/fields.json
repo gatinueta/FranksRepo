@@ -1,0 +1,32 @@
+{
+  "pos": [
+    {
+      "name": "MR_PEACOCK",
+      "type": "PERSON_START",
+      "x": 10,
+      "y": 10
+    },
+    {
+      "name": "KITCHEN",
+      "type": "ROOM",
+      "x": 100,
+      "y": 100
+    },
+    {
+      "name": "A1",
+      "type": "NORMAL",
+      "x": 12,
+      "y": 12
+    }
+  ],
+  "transitions": [
+    {
+      "fromField": "KITCHEN",
+      "toField": "MR_PEACOCK"
+    },
+    {
+      "fromField": "KITCHEN",
+      "toField": "A1"
+    }
+  ]
+}
