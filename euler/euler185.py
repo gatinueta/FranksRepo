@@ -30,6 +30,15 @@ prob = '''5616185650518293 ;2 correct
 1841236454324589 ;3 correct
 2659862637316867 ;2 correct'''
 
+probtest = '''90342 ;2 correct
+70794 ;0 correct
+39458 ;2 correct
+34109 ;1 correct
+51545 ;2 correct
+12531 ;1 correct'''
+
+print '39542 [[],[0],[2],[3,4],[0,1],[2,3]]'
+DEBUG = False
 lines = prob.split('\n')
 
 matches = []
@@ -40,37 +49,106 @@ for line in lines:
 matches.sort(key = lambda m: m.correct)
 print('\n'.join([str(m) for m in matches]))
 
-LEN = 16
-ng = [ [] for i in range(LEN) ]
+LEN = len(matches[0].string)
 
-def find(ng, mi, sel):
-    if mi >= len(matches):
-        print('fail')
-        return
+def nextsel(sel, mi):
     if sel is None:
-        sel = list(range(matches[mi].correct))
+        newsel = list(range(matches[mi].correct))
     else:
+        newsel = list(sel)
         le = len(sel)-1
         max = LEN-1
         while le >= 0 and sel[le] == max:
             le -= 1
             max -= 1
         if le < 0:
-            mi += 1
-            sel = list(range(matches[mi].correct))
+            newsel = None
         else:
             b = sel[le] + 1
             for i in range(le, len(sel)):
-                sel[i] = b
+                newsel[i] = b
                 b += 1
-    for i in sel:
-        ng[i].append(matches[mi].string[i])
-    print(ng, mi, sel)
-    find(ng, mi, sel)
-    for i in sel:
-        ng[i].pop()
+    return newsel
 
-            
+def printl(l):
+    for e in l:
+        print(e)
+    print('')
 
-find(ng, 0, None)
+def checksoft(config, printSolution=False):
+    solution = [ None for d in range(LEN) ]
+    for i in range(len(config)):
+        for pos in config[i]:
+            d = matches[i].string[pos]
+            if solution[pos] in (None,d):
+                solution[pos] = d
+            else:
+                if printSolution:
+                    print('fail')
+                    print(config)
+                    printl(solution)
+                return False
+    if printSolution:
+        print('success')
+        print(config)
+        printl(solution)
+    return True
+
+def check(config, printSolution=False):
+    solution = [ set([str(d) for d in range(10)]) for i in range(LEN) ]
+    for i in range(len(config)):
+        for pos in range(LEN):
+            d = matches[i].string[pos]
+            if pos in config[i]:
+                solution[pos] &= { d }
+            else:
+                solution[pos] -= { d }
+            if len(solution[pos]) == 0:
+                if printSolution:
+                    print('fail!')
+                    print(config)
+                    printl(solution)
+                return False
+    if printSolution:
+        print('success!')
+        print(config)
+        printl(solution)
+    return True
+
+
+def find(config):
+    maxlen = 0
+    while True:
+        success = checksoft(config, printSolution=DEBUG)
+        if success and len(config) == len(matches):
+            success = check(config, printSolution=DEBUG)
+            if success:
+                break
+        if success:
+            sel = nextsel(None, len(config))
+            config.append(sel)
+            if len(config) > maxlen:
+                maxlen = len(config)
+                print(config)
+        else:
+            while(True):
+                i = len(config)
+                if i == 0:
+                    print('i=0: fail')
+                    return False
+                cursel = config.pop()
+                sel = nextsel(cursel, i)
+                if sel is not None:
+                    config.append(sel)
+                    break
+    check(config, True)
+    
+    print('\n'.join([str(m) for m in matches]))
+    print('winning config:')
+    print(config)
+
+    return True
+
+check([[], [0], [1]])                
+find([])
 
