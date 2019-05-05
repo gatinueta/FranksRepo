@@ -46,7 +46,7 @@ for line in lines:
     m = re.match(r'(\d+) ;(\d+) correct', line)
     matches.append(Group(m.groups()))
 
-matches.sort(key = lambda m: m.correct)
+matches.sort(key = lambda m: m.correct, reverse=True)
 print('\n'.join([str(m) for m in matches]))
 
 LEN = len(matches[0].string)
