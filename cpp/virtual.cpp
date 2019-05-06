@@ -5,7 +5,7 @@ public:
 };
 
 class B: public A {
-	void foo();
+	void foo() override;
 };
 
 int main(int argc, char** argv) {
