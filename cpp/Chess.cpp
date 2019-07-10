@@ -1,14 +1,69 @@
 #include <iostream>
 
 class Piece {
+   const bool m_black;
 public:
-    static const char sym = 0;
+   Piece(bool black) : m_black(black) {
+   }
+   virtual const char getSym() const = 0;
+   
+   const char sym() const {
+     return m_black ? getSym() : tolower(getSym());
+   }
 };
 
 class Pawn : public Piece {
 public:
-    static const char sym = 'P';
+    Pawn(bool black) : Piece(black) {
+    }
+    const char getSym() const { 
+        return 'P';
+    }
 };
+
+class Knight : public Piece {
+public:
+    Knight(bool black) : Piece(black) {
+    }
+    const char getSym() const {
+        return 'N';
+    }
+};
+
+class Rook : public Piece {
+public:
+    Rook(bool black) : Piece(black) {
+    }
+    const char getSym() const {
+        return 'R';
+    }
+};
+
+class Queen : public Piece {
+public:
+    Queen(bool black) : Piece(black) {
+    }
+    const char getSym() const {
+        return 'Q';
+    }
+};
+
+class Bishop : public Piece {
+    Bishop(bool black) : Piece(black) {
+    }
+    const char getSym() const {
+        return 'B';
+    }
+};
+
+class King : public Piece {
+    King(bool black) : Piece(black) {
+    }
+    const char getSym() const {
+        return 'K';
+    }
+};
+
 
 class Field {
     Piece *m_content;
@@ -40,8 +95,8 @@ struct Point {
     Point(int ax, int ay) : x(ax), y(ay) {
     }
     static Point convert(std::string pos) {
-        size_t x = ROWNAMES.find(pos[0]);
-        size_t y = COLNAMES.find(pos[1]);
+        size_t y = ROWNAMES.find(pos[0]);
+        size_t x = COLNAMES.find(pos[1]);
         if (x == std::string::npos || y == std::string::npos) {
             throw std::runtime_error("can't parse " + pos);
         }
@@ -65,7 +120,7 @@ public:
 
 std::ostream& operator<<(std::ostream &strm, const Field &f) {
     const Piece *p = f.get();
-    strm << (p == NULL ? '.' : p->sym);
+    strm << (p == NULL ? '.' : p->sym());
     return strm;
 }
 
@@ -86,11 +141,18 @@ std::ostream& operator<<(std::ostream &strm, const Board &b) {
 }
 
 int main(int argc, char **argv) {
-    Pawn p;
+    Pawn w_p(false);
+    Pawn b_p(true);
     Board b;
-    b.get("C3").put(p);
+
+    b.get("F2").put(w_p);
+    std::cout << b << std::endl;
+    b.get("C3").put(b_p);
     std::cout << b << std::endl;
 
+    Rook w_r(false);
+    b.get("H7").put(w_r);
+    std::cout << b << std::endl;
     return 0;
 }
 
