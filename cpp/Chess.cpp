@@ -1,4 +1,5 @@
 #include <iostream>
+#include <array>
 
 class Piece {
    bool m_black;
@@ -19,8 +20,14 @@ public:
 
 class Pawn : public Piece {
 public:
+    Pawn() {
+        std::cout << "creating pawn" << std::endl;
+    }
     const char getSym() const { 
         return 'P';
+    }
+    ~Pawn() {
+        std::cout << "destroying pawn" << std::endl;
     }
 };
 
@@ -133,14 +140,16 @@ std::ostream& operator<<(std::ostream &strm, const Board &b) {
     return strm;
 }
 
-void place_pawns(Board& b, const std::string& col, const bool black) {
-    std::unique_ptr<Pawn[]> pawns = std::make_unique<Pawn[]>(8);
+std::shared_ptr<std::array<Pawn,8>> place_pawns(Board& b, const std::string& col, const bool black) {
+    auto pawns_p = std::make_shared<std::array<Pawn,8>>();
+    auto pawns = *pawns_p;
     for (int i=0; i<8; i++) {
         pawns[i].setBlack(black);
         std::string pos(col);
         pos += COLNAMES[i];
         b.get(pos).put(pawns[i]);
     }
+    return pawns_p; 
 }
 
 int main(int argc, char **argv) {
@@ -156,9 +165,12 @@ int main(int argc, char **argv) {
 
     Rook w_r;
     b.get("H7").put(w_r);
-    place_pawns(b, "A", false);
+    std::shared_ptr<std::array<Pawn,8>> white_pawns = place_pawns(b, "A", false);
+    auto black_pawns = place_pawns(b, "H", true);
+    std::cout << "white pawns still in scope: " << white_pawns << std::endl;
+    std::cout << "white pawns use count is " << white_pawns.use_count() << std::endl;
+    std::cout << "fourth is black: " << (*white_pawns)[3].isBlack() << std::endl;
     std::cout << b.get("A3").get()->isBlack() << ", " << b.get("H4").get()->isBlack() << std::endl;
-    place_pawns(b, "H", true);
     std::cout << b << std::endl;
     return 0;
 }

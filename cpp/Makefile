@@ -1,3 +1,3 @@
 CXX = clang++
-CXXFLAGS = -std=c++14 -stdlib=libc++ 
+CXXFLAGS = -g -Wall -std=c++14 -stdlib=libc++ 
 
