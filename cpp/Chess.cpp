@@ -1,9 +1,14 @@
 #include <iostream>
 
 class Piece {
-   const bool m_black;
+   bool m_black;
 public:
-   Piece(bool black) : m_black(black) {
+   void setBlack(bool black) {
+     std::cout << "setting black to " << black << std::endl;
+     m_black = black;
+   }
+   bool isBlack() const {
+     return m_black;
    }
    virtual const char getSym() const = 0;
    
@@ -14,8 +19,6 @@ public:
 
 class Pawn : public Piece {
 public:
-    Pawn(bool black) : Piece(black) {
-    }
     const char getSym() const { 
         return 'P';
     }
@@ -23,8 +26,6 @@ public:
 
 class Knight : public Piece {
 public:
-    Knight(bool black) : Piece(black) {
-    }
     const char getSym() const {
         return 'N';
     }
@@ -32,8 +33,6 @@ public:
 
 class Rook : public Piece {
 public:
-    Rook(bool black) : Piece(black) {
-    }
     const char getSym() const {
         return 'R';
     }
@@ -41,24 +40,18 @@ public:
 
 class Queen : public Piece {
 public:
-    Queen(bool black) : Piece(black) {
-    }
     const char getSym() const {
         return 'Q';
     }
 };
 
 class Bishop : public Piece {
-    Bishop(bool black) : Piece(black) {
-    }
     const char getSym() const {
         return 'B';
     }
 };
 
 class King : public Piece {
-    King(bool black) : Piece(black) {
-    }
     const char getSym() const {
         return 'K';
     }
@@ -140,9 +133,20 @@ std::ostream& operator<<(std::ostream &strm, const Board &b) {
     return strm;
 }
 
+void place_pawns(Board& b, const std::string& col, const bool black) {
+    std::unique_ptr<Pawn[]> pawns = std::make_unique<Pawn[]>(8);
+    for (int i=0; i<8; i++) {
+        pawns[i].setBlack(black);
+        std::string pos(col);
+        pos += COLNAMES[i];
+        b.get(pos).put(pawns[i]);
+    }
+}
+
 int main(int argc, char **argv) {
-    Pawn w_p(false);
-    Pawn b_p(true);
+    Pawn w_p;
+    Pawn b_p;
+    b_p.setBlack(true);
     Board b;
 
     b.get("F2").put(w_p);
@@ -150,8 +154,11 @@ int main(int argc, char **argv) {
     b.get("C3").put(b_p);
     std::cout << b << std::endl;
 
-    Rook w_r(false);
+    Rook w_r;
     b.get("H7").put(w_r);
+    place_pawns(b, "A", false);
+    std::cout << b.get("A3").get()->isBlack() << ", " << b.get("H4").get()->isBlack() << std::endl;
+    place_pawns(b, "H", true);
     std::cout << b << std::endl;
     return 0;
 }
