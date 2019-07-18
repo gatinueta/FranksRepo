@@ -140,9 +140,9 @@ std::ostream& operator<<(std::ostream &strm, const Board &b) {
     return strm;
 }
 
-std::shared_ptr<std::array<Pawn,8>> place_pawns(Board& b, const std::string& col, const bool black) {
+static auto place_pawns(Board& b, const std::string& col, const bool black) {
     auto pawns_p = std::make_shared<std::array<Pawn,8>>();
-    auto pawns = *pawns_p;
+    std::array<Pawn,8>& pawns = *pawns_p;
     for (int i=0; i<8; i++) {
         pawns[i].setBlack(black);
         std::string pos(col);
@@ -165,12 +165,13 @@ int main(int argc, char **argv) {
 
     Rook w_r;
     b.get("H7").put(w_r);
-    std::shared_ptr<std::array<Pawn,8>> white_pawns = place_pawns(b, "A", false);
-    auto black_pawns = place_pawns(b, "H", true);
+    auto white_pawns = place_pawns(b, "B", false);
+    std::cout << "got shared ptr " << white_pawns << std::endl;
+    auto black_pawns = place_pawns(b, "G", true);
     std::cout << "white pawns still in scope: " << white_pawns << std::endl;
     std::cout << "white pawns use count is " << white_pawns.use_count() << std::endl;
     std::cout << "fourth is black: " << (*white_pawns)[3].isBlack() << std::endl;
-    std::cout << b.get("A3").get()->isBlack() << ", " << b.get("H4").get()->isBlack() << std::endl;
+    std::cout << b.get("B3").get()->isBlack() << ", " << b.get("G4").get()->isBlack() << std::endl;
     std::cout << b << std::endl;
     return 0;
 }
