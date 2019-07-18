@@ -1,5 +1,6 @@
 #include <iostream>
 #include <array>
+#include <vector>
 
 class Piece {
    bool m_black;
@@ -87,16 +88,16 @@ public:
 };
 const static int DIM = 8;
 
-const static std::string ROWNAMES = "ABCDEFGH";
-const static std::string COLNAMES = "12345678";
+const static std::string COLNAMES = "ABCDEFGH";
+const static std::string ROWNAMES = "12345678";
 
 struct Point {
     int x, y;
     Point(int ax, int ay) : x(ax), y(ay) {
     }
     static Point convert(std::string pos) {
-        size_t y = ROWNAMES.find(pos[0]);
-        size_t x = COLNAMES.find(pos[1]);
+        size_t x = COLNAMES.find(pos[0]);
+        size_t y = ROWNAMES.find(pos[1]);
         if (x == std::string::npos || y == std::string::npos) {
             throw std::runtime_error("can't parse " + pos);
         }
@@ -108,10 +109,10 @@ class Board {
     Field m_b[DIM * DIM];
 public:
     Field& get(Point p) {
-        return m_b[p.x + DIM*p.y];
+        return m_b[p.y + DIM*p.x];
     }
     const Field& at(Point p) const {
-        return m_b[p.x + DIM*p.y];
+        return m_b[p.y + DIM*p.x];
     }
     Field& get(const std::string& pos) {
         return this->get(Point::convert(pos));
@@ -125,9 +126,9 @@ std::ostream& operator<<(std::ostream &strm, const Field &f) {
 }
 
 std::ostream& operator<<(std::ostream &strm, const Board &b) {
-    strm << "  1 2 3 4 5 6 7 8" << std::endl;
+    strm << "  A B C D E F G H" << std::endl;
     Point p(0, 0);
-    for (int y=0; y<DIM; y++) {
+    for (int y=DIM-1; y>=0; y--) {
         p.y = y;
         strm << ROWNAMES[y] << ' ';
         for (int x=0; x<DIM; x++) {
@@ -140,38 +141,61 @@ std::ostream& operator<<(std::ostream &strm, const Board &b) {
     return strm;
 }
 
-static auto place_pawns(Board& b, const std::string& col, const bool black) {
+static auto place_pawns(Board& b, const char row, const bool black) {
     auto pawns_p = std::make_shared<std::array<Pawn,8>>();
     std::array<Pawn,8>& pawns = *pawns_p;
     for (int i=0; i<8; i++) {
         pawns[i].setBlack(black);
-        std::string pos(col);
+        std::string pos;
         pos += COLNAMES[i];
+        pos += row;
         b.get(pos).put(pawns[i]);
     }
     return pawns_p; 
 }
 
+typedef std::shared_ptr<Piece> P_Piece;
+
+template<typename T>
+static std::shared_ptr<T> add(Board& b, const char col, const char row, bool black, std::vector<P_Piece>& ptrs) {
+    auto w_piece = std::make_shared<T>();
+    std::string pos;
+    pos += col; 
+    pos += row;
+    w_piece->setBlack(black);
+    b.get(pos).put(*w_piece);
+    ptrs.push_back(w_piece);
+    return w_piece;
+}
+
+static auto place_pieces(Board& b, const char row, const bool black) {
+    Rook w_r2;
+    Bishop w_b1, w_b2;
+    Knight w_n1, w_n2;
+    Queen w_q;
+    King w_k;
+    
+    std::vector<P_Piece> ptrs;
+    
+    add<Rook>(b, 'A', row, black, ptrs);
+    add<Rook>(b, 'H', row, black, ptrs);
+    add<Knight>(b, 'B', row, black, ptrs);
+    add<Knight>(b, 'G', row, black, ptrs);
+    add<Bishop>(b, 'C', row, black, ptrs);
+    add<Bishop>(b, 'F', row, black, ptrs);
+    add<Queen>(b, 'D', row, black, ptrs);
+    add<King>(b, 'E', row, black, ptrs);
+    return ptrs;
+}
+
 int main(int argc, char **argv) {
-    Pawn w_p;
-    Pawn b_p;
-    b_p.setBlack(true);
     Board b;
 
-    b.get("F2").put(w_p);
-    std::cout << b << std::endl;
-    b.get("C3").put(b_p);
-    std::cout << b << std::endl;
-
-    Rook w_r;
-    b.get("H7").put(w_r);
-    auto white_pawns = place_pawns(b, "B", false);
+    auto white_pawns = place_pawns(b, '2', false);
     std::cout << "got shared ptr " << white_pawns << std::endl;
-    auto black_pawns = place_pawns(b, "G", true);
-    std::cout << "white pawns still in scope: " << white_pawns << std::endl;
-    std::cout << "white pawns use count is " << white_pawns.use_count() << std::endl;
-    std::cout << "fourth is black: " << (*white_pawns)[3].isBlack() << std::endl;
-    std::cout << b.get("B3").get()->isBlack() << ", " << b.get("G4").get()->isBlack() << std::endl;
+    auto black_pawns = place_pawns(b, '7', true);
+    auto white_pieces = place_pieces(b, '1', false);
+    auto black_pieces = place_pieces(b, '8', true);
     std::cout << b << std::endl;
     return 0;
 }
