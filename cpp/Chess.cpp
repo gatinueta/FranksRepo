@@ -2,9 +2,65 @@
 #include <array>
 #include <vector>
 
+const static int DIM = 8;
+
+const static std::string COLNAMES = "ABCDEFGH";
+const static std::string ROWNAMES = "12345678";
+
+struct Point {
+    int x, y;
+    Point(int ax, int ay) : x(ax), y(ay) {
+    }
+    Point() : Point(0, 0) {
+    }
+    static Point convert(const char col, const char row) {
+        size_t x = COLNAMES.find(col);
+        size_t y = ROWNAMES.find(row);
+        if (x == std::string::npos || y == std::string::npos) {
+            std::string msg("can't parse ");
+            msg += col;
+            msg += row;
+            throw std::runtime_error(msg);
+        }
+        return Point(x, y);
+    }
+    static Point convert(const std::string& pos) {
+        return convert(pos[0], pos[1]);
+    }
+    const static Point OFFBOARD;
+
+    Point operator+(const Point& p) const {
+        Point res(x, y);
+        res.x += p.x;
+        res.y += p.y;
+        return res;
+    }
+    bool isOnBoard() const {
+        return x >= 0 && x < DIM && y >= 0 && y < DIM;
+    }
+
+}; 
+
+const Point Point::OFFBOARD = Point(-1, -1);
+
+std::ostream& operator<<(std::ostream &strm, const Point &p) {
+    strm << COLNAMES[p.x] << ROWNAMES[p.y];
+    return strm;
+}
+
 class Piece {
    bool m_black;
+protected:
+   Point m_pos;
 public:
+   Piece() : m_pos(Point::OFFBOARD) {
+   }
+   void setPos(const Point& pos) {
+     m_pos = pos;
+   }
+   Point getPos() const {
+     return m_pos;
+   }
    void setBlack(bool black) {
      m_black = black;
    }
@@ -19,6 +75,13 @@ public:
    virtual bool isKing() const {
      return false;
    }
+   virtual bool isPawn() const {
+     return false;
+   }
+   virtual std::vector<Point> getTargets() const { // TODO pure virtual?
+     return {};
+   }
+
 };
 
 class Pawn : public Piece {
@@ -31,6 +94,9 @@ public:
     }
     ~Pawn() {
         std::cout << "destroying pawn" << std::endl;
+    }
+    bool isPawn() const {
+        return true;
     }
 };
 
@@ -63,46 +129,53 @@ class Bishop : public Piece {
 };
 
 class King : public Piece {
+    const static Point M_INCS[];
+public:
     const char getSym() const {
         return 'K';
     }
     bool isKing() const {
         return true;
     }
+
+    std::vector<Point> getTargets() const;
 };
 
+const Point King::M_INCS[] = { 
+    Point(1,-1), Point(1,0), Point(1,1), 
+    Point(0,-1), Point(0,1), 
+    Point(-1,-1), Point(-1,0), Point(-1,1) 
+};
 
-const static int DIM = 8;
-
-const static std::string COLNAMES = "ABCDEFGH";
-const static std::string ROWNAMES = "12345678";
-
-struct Point {
-    int x, y;
-    Point(int ax, int ay) : x(ax), y(ay) {
-    }
-    Point() : Point(0, 0) {
-    }
-    static Point convert(std::string pos) {
-        size_t x = COLNAMES.find(pos[0]);
-        size_t y = ROWNAMES.find(pos[1]);
-        if (x == std::string::npos || y == std::string::npos) {
-            throw std::runtime_error("can't parse " + pos);
+std::vector<Point> King::getTargets() const {
+        std::vector<Point> targets;
+        for (Point inc: M_INCS) {
+            Point target = m_pos + inc;
+            if (target.isOnBoard()) {
+                targets.push_back(target);
+            }
         }
-        return Point(x, y);
-    }
-};  
+        return targets;
+}
+
 
 class Field {
     Piece *m_content;
 public:
     Point m_pos; // TODO not public
+    Point getPos() const {
+        return m_pos;
+    }
     Field() {
         m_content = nullptr;
     }
     const Piece *put(Piece& p) {
         Piece *old = m_content;
         m_content = &p;
+        if (old != nullptr) {
+            old->setPos(Point(-1, -1));
+        }
+        p.setPos(m_pos);
         return old;
     }
     const Piece *remove() {
@@ -131,6 +204,10 @@ public:
             }
         }
     }
+
+    Point getKingPos(bool black) const {
+        return black ? m_bKingPos : m_wKingPos;
+    }
     Field& get(Point p) {
         return m_b[p.y + DIM*p.x];
     }
@@ -138,9 +215,12 @@ public:
         return m_b[p.y + DIM*p.x];
     }
     Field& get(const std::string& pos) {
-        return this->get(Point::convert(pos));
+        return get(Point::convert(pos));
     }
-    bool whitesTurn() {
+    Field& get(const char col, const char row) {
+        return get(Point::convert(col, row));
+    }
+    bool whitesTurn() const {
         return m_whitesTurn;
     }
     bool validate() {
@@ -156,7 +236,20 @@ public:
                  }
             }
          }
-         return n_wKings == 1 && n_bKings == 1;
+         if (n_wKings != 1 || n_bKings != 1) {
+            std::cerr << "n_wKings=" << n_wKings << ", n_bKings=" << n_bKings << std::endl;
+            return false;
+         }
+         for (int x=0; x<DIM; x++) {
+            for (auto row: { '1', '8' }) {
+                Field& f = get(COLNAMES[x], row);
+                if (f.get() && f.get()->isPawn()) {
+                    std::cerr << "pawn on " << f.getPos() << std::endl;
+                    return false;
+                }
+            }
+         }
+         return true;
     }
 };
 
@@ -184,13 +277,10 @@ std::ostream& operator<<(std::ostream &strm, const Board &b) {
 
 static auto place_pawns(Board& b, const char row, const bool black) {
     auto pawns_p = std::make_shared<std::array<Pawn,8>>();
-    std::array<Pawn,8>& pawns = *pawns_p;
-    for (int i=0; i<8; i++) {
+    std::array<Pawn,DIM>& pawns = *pawns_p;
+    for (int i=0; i<DIM; i++) {
         pawns[i].setBlack(black);
-        std::string pos;
-        pos += COLNAMES[i];
-        pos += row;
-        b.get(pos).put(pawns[i]);
+        b.get(COLNAMES[i], row).put(pawns[i]);
     }
     return pawns_p; 
 }
@@ -200,11 +290,8 @@ typedef std::shared_ptr<Piece> P_Piece;
 template<typename T>
 static std::shared_ptr<T> add(Board& b, const char col, const char row, bool black, std::vector<P_Piece>& ptrs) {
     auto w_piece = std::make_shared<T>();
-    std::string pos;
-    pos += col; 
-    pos += row;
     w_piece->setBlack(black);
-    b.get(pos).put(*w_piece);
+    b.get(col, row).put(*w_piece);
     ptrs.push_back(w_piece);
     return w_piece;
 }
@@ -223,6 +310,17 @@ static auto place_pieces(Board& b, const char row, const bool black) {
     return ptrs;
 }
 
+template <typename T>
+std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
+  if ( !v.empty() ) {
+    out << '[';
+    std::copy (v.begin(), v.end(), std::ostream_iterator<T>(out, ", "));
+    out << "\b\b]";
+  }
+  return out;
+}
+
+
 int main(int argc, char **argv) {
     Board b;
 
@@ -234,7 +332,11 @@ int main(int argc, char **argv) {
     if (!b.validate()) {
         std::cout << "error: validate failed" << std::endl;
     }
+    std::cout << "black king pos is " << b.getKingPos(true) << std::endl;
     std::cout << b << std::endl;
+    const Piece* wKing = b.get(b.getKingPos(false)).get();
+    auto targets = wKing->getTargets();
+    std::cout << "white king targets: " << targets << std::endl;
     return 0;
 }
 
