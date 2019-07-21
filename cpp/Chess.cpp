@@ -35,6 +35,11 @@ struct Point {
         res.y += p.y;
         return res;
     }
+    Point& operator+=(const Point& p) {
+        x += p.x;
+        y += p.y;
+        return *this;
+    }
     bool isOnBoard() const {
         return x >= 0 && x < DIM && y >= 0 && y < DIM;
     }
@@ -54,6 +59,8 @@ class Piece {
    bool m_black;
 protected:
    const Field* m_field;
+   std::vector<Point> getDirectTargets() const;
+   std::vector<Point> getIterTargets() const;
 public:
    Piece() : m_field(nullptr) {
    }
@@ -83,7 +90,6 @@ public:
    virtual std::vector<Point> getTargets() const { // TODO pure virtual?
      return {};
    }
-   std::vector<Point> getDirectTargets() const;
 
    virtual const std::vector<Point> getIncs() const {
      return {};
@@ -105,6 +111,7 @@ public:
     bool isPawn() const {
         return true;
     }
+    std::vector<Point> getTargets() const;
 };
 
 class Knight : public Piece {
@@ -127,24 +134,58 @@ const std::vector<Point> Knight::M_INCS = {
 };
 
 class Rook : public Piece {
+    const static std::vector<Point> M_INCS;
 public:
     const char getSym() const {
         return 'R';
     }
+    std::vector<Point> getTargets() const;
+    const std::vector<Point> getIncs() const {
+        return M_INCS;
+    }
 };
 
 class Queen : public Piece {
+    const static std::vector<Point> M_INCS;
 public:
     const char getSym() const {
         return 'Q';
     }
+    std::vector<Point> getTargets() const;
+    const std::vector<Point> getIncs() const {
+        return M_INCS;
+    }
 };
 
 class Bishop : public Piece {
+    const static std::vector<Point> M_INCS;
+public: 
     const char getSym() const {
         return 'B';
     }
+    std::vector<Point> getTargets() const;
+    const std::vector<Point> getIncs() const {
+        return M_INCS;
+    }
 };
+
+const std::vector<Point> Bishop::M_INCS = {
+    Point(1,-1), Point(1,1), 
+    Point(-1,-1), Point(-1,1)
+};
+
+const std::vector<Point> Rook::M_INCS = {
+    Point(1,0), Point(0,1),
+    Point(-1,0), Point(0,-1)
+};
+
+const std::vector<Point> Queen::M_INCS = {
+    Point(1,-1), Point(1,1), 
+    Point(-1,-1), Point(-1,1),
+    Point(1,0), Point(0,1),
+    Point(-1,0), Point(0,-1)
+};
+
 
 class King : public Piece {
     const static std::vector<Point> M_INCS;
@@ -290,6 +331,29 @@ std::vector<Point> Piece::getDirectTargets() const {
     return targets;
 }
 
+std::vector<Point> Piece::getIterTargets() const {
+    std::vector<Point> targets;
+    const Board *b = m_field->getBoard();
+    for (Point inc: getIncs()) {
+        Point target = m_field->getPos();
+        while(true) {
+            target += inc;
+            if (!target.isOnBoard()) {
+                break;
+            }
+            if ( b->at(target).isEmpty()) {
+                targets.push_back(target);
+            } else if (b->at(target).get()->isBlack() == isBlack()) {
+                break;
+            } else {
+                targets.push_back(target);
+                break;
+            }
+        }
+    }
+    return targets;
+}
+
 std::vector<Point> King::getTargets() const {
     return getDirectTargets();
 }
@@ -298,6 +362,44 @@ std::vector<Point> Knight::getTargets() const {
     return getDirectTargets();
 }
 
+std::vector<Point> Bishop::getTargets() const {
+    return getIterTargets();
+}
+
+std::vector<Point> Rook::getTargets() const {
+    return getIterTargets();
+}
+
+std::vector<Point> Queen::getTargets() const {
+    return getIterTargets();
+}
+
+std::vector<Point> Pawn::getTargets() const {
+    std::vector<Point> targets;
+    const Board *b = m_field->getBoard();
+    Point pos = m_field->getPos();
+    Point straightTarget = pos + (isBlack() ? Point(0, -1) : Point(0, 1));
+    Point doubleStepTarget = pos + (isBlack() ? Point(0, -2) : Point(0, 2));
+    Point capTarget1 = pos + (isBlack() ? Point(1, -1) : Point(1, 1));
+    Point capTarget2 = pos + (isBlack() ? Point(-1, -1) : Point(-1, 1));
+
+    if (straightTarget.isOnBoard() && b->at(straightTarget).isEmpty()) {
+        targets.push_back(straightTarget);
+        if ((isBlack() && pos.y == DIM-2) ||
+            (!isBlack() && pos.y == 1)) {
+            if (doubleStepTarget.isOnBoard() && b->at(doubleStepTarget).isEmpty()) {
+                targets.push_back(doubleStepTarget);
+            }
+        }
+    }
+    for (Point capTarget: { capTarget1, capTarget2 }) {
+        if (capTarget.isOnBoard() && !b->at(capTarget).isEmpty() && b->at(capTarget).get()->isBlack() != isBlack()) {
+            targets.push_back(capTarget);
+        }
+        //TODO en passant
+    }
+    return targets;
+}
 
 std::ostream& operator<<(std::ostream &strm, const Field &f) {
     const Piece *p = f.get();
@@ -321,15 +423,6 @@ std::ostream& operator<<(std::ostream &strm, const Board &b) {
     return strm;
 }
 
-static auto place_pawns(Board& b, const char row, const bool black) {
-    auto pawns_p = std::make_shared<std::array<Pawn,8>>();
-    std::array<Pawn,DIM>& pawns = *pawns_p;
-    for (int i=0; i<DIM; i++) {
-        pawns[i].setBlack(black);
-        b.get(COLNAMES[i], row).put(pawns[i]);
-    }
-    return pawns_p; 
-}
 
 typedef std::shared_ptr<Piece> P_Piece;
 
@@ -340,6 +433,14 @@ static std::shared_ptr<T> add(Board& b, const char col, const char row, bool bla
     b.get(col, row).put(*w_piece);
     ptrs.push_back(w_piece);
     return w_piece;
+}
+
+static auto place_pawns(Board& b, const char row, const bool black) {
+    std::vector<P_Piece> ptrs;
+    for (int i=0; i<DIM; i++) {
+        add<Pawn>(b, COLNAMES[i], row, black, ptrs);
+    }
+    return ptrs; 
 }
 
 static auto place_pieces(Board& b, const char row, const bool black) {
@@ -366,26 +467,41 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
   return out;
 }
 
-
-int main(int argc, char **argv) {
-    Board b;
-
+static auto setup(Board& b) {
     auto white_pawns = place_pawns(b, '2', false);
-    std::cout << "got shared ptr " << white_pawns << std::endl;
     auto black_pawns = place_pawns(b, '7', true);
     auto white_pieces = place_pieces(b, '1', false);
     auto black_pieces = place_pieces(b, '8', true);
     if (!b.validate()) {
         std::cout << "error: validate failed" << std::endl;
     }
+    std::vector<P_Piece> all_pieces;
+    all_pieces.insert(all_pieces.end(), white_pawns.begin(), white_pawns.end());
+    all_pieces.insert(all_pieces.end(), black_pawns.begin(), black_pawns.end());
+    all_pieces.insert(all_pieces.end(), white_pieces.begin(), white_pieces.end());
+    all_pieces.insert(all_pieces.end(), black_pieces.begin(), black_pieces.end());
+    return all_pieces;
+}
+
+int main(int argc, char **argv) {
+    Board b;
+    auto pieces = setup(b);
+
+    // test code
     std::cout << "black king pos is " << b.getKingPos(true) << std::endl;
-    std::cout << b << std::endl;
     const Piece* wKing = b.get(b.getKingPos(false)).get();
     auto targets = wKing->getTargets();
     std::cout << "white king targets: " << targets << std::endl;
     const Piece* bKnight = b.get("B8").get();
     targets = bKnight->getTargets();
     std::cout << "black knight targets: " << targets << std::endl;
+    Bishop bi;
+    b.get("D4").put(bi);
+    std::cout << b << std::endl;
+    std::cout << "white bishop targets: " << bi.getTargets() << std::endl;
+    b.get("D4").remove();
+    targets = b.get("D7").get()->getTargets();
+    std::cout << "D7 pawn targets: " << targets << std::endl; 
     return 0;
 }
 
