@@ -1,6 +1,7 @@
 #include <iostream>
 #include <array>
 #include <vector>
+#include <list>
 
 const static int DIM = 8;
 
@@ -40,6 +41,9 @@ struct Point {
         y += p.y;
         return *this;
     }
+    bool operator==(const Point& p) {
+        return x == p.x && y == p.y;
+    }
     bool isOnBoard() const {
         return x >= 0 && x < DIM && y >= 0 && y < DIM;
     }
@@ -58,16 +62,19 @@ class Field;
 class Piece {
    bool m_black;
 protected:
-   const Field* m_field;
+   Field* m_field;
    std::vector<Point> getDirectTargets() const;
    std::vector<Point> getIterTargets() const;
 public:
    Piece() : m_field(nullptr) {
    }
-   void setField(const Field *field) {
+   void setField(Field *field) {
      m_field = field;
    }
    const Field *getField() const {
+     return m_field;
+   }
+   Field *getFieldForUpdate() {
      return m_field;
    }
    void setBlack(bool black) {
@@ -87,14 +94,12 @@ public:
    virtual bool isPawn() const {
      return false;
    }
-   virtual std::vector<Point> getTargets() const { // TODO pure virtual?
-     return {};
-   }
+   virtual std::vector<Point> getTargets() const = 0;
 
    virtual const std::vector<Point> getIncs() const {
      return {};
    }
-
+   std::vector<Point> getMoves() const;
 };
 
 class Pawn : public Piece {
@@ -213,10 +218,10 @@ class Board;
 
 class Field {
     Piece *m_content;
-    const Board *m_b;
+    Board *m_b;
     Point m_pos;
 public:
-    void init(const Point pos, const Board *b) {
+    void init(const Point pos, Board *b) {
         m_pos = pos;
         m_b = b;
     }
@@ -226,19 +231,14 @@ public:
     const Board* getBoard() const {
         return m_b;
     }
+    Board* getBoardForUpdate() {
+        return m_b;
+    }
     Field() {
         m_content = nullptr;
     }
-    const Piece *put(Piece& p) {
-        Piece *old = m_content;
-        m_content = &p;
-        if (old != nullptr) {
-            old->setField(nullptr);
-        }
-        p.setField(this);
-        return old;
-    }
-    const Piece *remove() {
+    Piece *put(Piece& p);
+    Piece *remove() {
         Piece *old = m_content;
         m_content = nullptr;
         return old;
@@ -246,16 +246,23 @@ public:
     const Piece* get() const {
         return m_content;
     }
+    Piece* getPiece() {
+        return m_content;
+    }
     bool isEmpty() const {
         return m_content == nullptr;
     }
 };
 
+class Game;
 
 class Board {
     Field m_b[DIM * DIM];
+    std::list<Piece*> m_whitePieces;
+    std::list<Piece*> m_blackPieces;
     bool m_whitesTurn;
     Point m_bKingPos, m_wKingPos;
+    Game *m_game;
 public:
     Board() : m_whitesTurn(true) {
         Point p;
@@ -266,6 +273,19 @@ public:
                 Field& f = get(p);
                 f.init(p, this);
             }
+        }
+    }
+    void setGame(Game *game) {
+        m_game = game;
+    }
+    Game *getGame() {
+        return m_game;
+    }
+    std::list<Piece*>& getPieces(bool black) {
+        if (black) {
+            return m_blackPieces;
+        } else {
+            return m_whitePieces;
         }
     }
 
@@ -286,6 +306,9 @@ public:
     }
     bool whitesTurn() const {
         return m_whitesTurn;
+    }
+    void setWhitesTurn(bool whitesTurn) {
+        m_whitesTurn = whitesTurn;
     }
     bool validate() {
         int n_wKings = 0, n_bKings = 0;
@@ -316,6 +339,18 @@ public:
          return true;
     }
 };
+
+Piece *Field::put(Piece& p) {
+        Piece *old = m_content;
+        m_content = &p;
+        if (old != nullptr) {
+            old->setField(nullptr);
+            m_b->getPieces(old->isBlack()).remove(old);
+        }
+        p.setField(this);
+        m_b->getPieces(p.isBlack()).push_back(&p);
+        return old;
+}
 
 std::vector<Point> Piece::getDirectTargets() const {
     std::vector<Point> targets;
@@ -467,25 +502,110 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
   return out;
 }
 
-static auto setup(Board& b) {
-    auto white_pawns = place_pawns(b, '2', false);
-    auto black_pawns = place_pawns(b, '7', true);
-    auto white_pieces = place_pieces(b, '1', false);
-    auto black_pieces = place_pieces(b, '8', true);
-    if (!b.validate()) {
-        std::cout << "error: validate failed" << std::endl;
+
+struct Move {
+    Point from;
+    Point to;
+    const Piece *piece;
+    Piece *capturedPiece;
+};
+
+class Game {
+    Board m_b;
+    std::vector<P_Piece> m_all_pieces;
+    std::vector<Move> m_moves;
+public:
+    Game() {
+        m_b.setGame(this);
     }
-    std::vector<P_Piece> all_pieces;
-    all_pieces.insert(all_pieces.end(), white_pawns.begin(), white_pawns.end());
-    all_pieces.insert(all_pieces.end(), black_pawns.begin(), black_pawns.end());
-    all_pieces.insert(all_pieces.end(), white_pieces.begin(), white_pieces.end());
-    all_pieces.insert(all_pieces.end(), black_pieces.begin(), black_pieces.end());
-    return all_pieces;
+    Board& getBoard() {
+        return m_b;
+    }
+    void setBoard(Board& b) {
+        m_b = b;
+    }
+    void setup() {
+        auto white_pawns = place_pawns(m_b, '2', false);
+        auto black_pawns = place_pawns(m_b, '7', true);
+        auto white_pieces = place_pieces(m_b, '1', false);
+        auto black_pieces = place_pieces(m_b, '8', true);
+        if (!m_b.validate()) {
+            std::cout << "error: validate failed" << std::endl;
+        }
+        m_all_pieces.insert(m_all_pieces.end(), white_pawns.begin(), white_pawns.end());
+        m_all_pieces.insert(m_all_pieces.end(), black_pawns.begin(), black_pawns.end());
+        m_all_pieces.insert(m_all_pieces.end(), white_pieces.begin(), white_pieces.end());
+        m_all_pieces.insert(m_all_pieces.end(), black_pieces.begin(), black_pieces.end());
+    }
+    bool makeMove(Piece& p, Point to) {
+        if (p.isBlack() == m_b.whitesTurn()) {
+           std::cout << "white's turn: " << m_b.whitesTurn() << std::endl;
+           return false;
+        }
+        Move move;
+        move.from = p.getField()->getPos();
+        move.to = to;
+        move.piece = &p;
+        
+        m_b.get(move.from).remove();
+        move.capturedPiece = m_b.get(to).put(p);
+        
+        m_moves.push_back(move);
+        m_b.setWhitesTurn(!m_b.whitesTurn());
+        return true;
+    }
+
+    bool retractMove() {
+        if (m_moves.size() == 0) {
+            return false;
+        }
+        Move& move = m_moves.back();
+        Piece* p = m_b.get(move.to).remove();
+        if (p != move.piece) {
+            std::cerr << "can't find piece of last move" << std::endl;
+            return false;
+        }
+        m_moves.pop_back();
+        m_b.get(move.from).put(*p);
+        if (move.capturedPiece != nullptr) {
+            m_b.get(move.to).put(*move.capturedPiece);
+        }
+        m_b.setWhitesTurn(!m_b.whitesTurn());
+        return true;
+    }
+};   
+
+std::vector<Point> Piece::getMoves() const {
+     Piece* that = const_cast<Piece*>(this);
+     Game *game = that->m_field->getBoardForUpdate()->getGame();
+     std::vector<Point> moves;
+     std::vector<Point> targets = getTargets();
+     Point kingPos = game->getBoard().getKingPos(this->isBlack());
+     for (Point target: getTargets()) {
+        game->makeMove(*that, target);
+        // check if chess
+        bool inChess = false;
+        for (Piece* p: game->getBoard().getPieces(!this->isBlack())) {
+            auto oppTargets = p->getTargets();
+            if (std::find(oppTargets.begin(), oppTargets.end(), kingPos) != oppTargets.end()) {
+                inChess = true;
+                break;
+            }
+        }
+        
+        game->retractMove();
+        if (!inChess) {
+            moves.push_back(target);
+        }
+     }
+     return moves;
 }
 
+
 int main(int argc, char **argv) {
-    Board b;
-    auto pieces = setup(b);
+    Game g;
+    g.setup();
+    Board& b = g.getBoard();
 
     // test code
     std::cout << "black king pos is " << b.getKingPos(true) << std::endl;
@@ -498,10 +618,17 @@ int main(int argc, char **argv) {
     Bishop bi;
     b.get("D4").put(bi);
     std::cout << b << std::endl;
-    std::cout << "white bishop targets: " << bi.getTargets() << std::endl;
+    std::cout << "white bishop moves: " << bi.getMoves() << std::endl;
     b.get("D4").remove();
     targets = b.get("D7").get()->getTargets();
     std::cout << "D7 pawn targets: " << targets << std::endl; 
+    Piece *pawn = b.get("D2").getPiece();
+    if (!g.makeMove(*pawn, pawn->getTargets()[0])) {
+        std::cout << "can't make the move to " << targets[0] << std::endl;
+    }
+    std::cout << b << std::endl;
+    g.retractMove();
+    std::cout << b << std::endl;
     return 0;
 }
 
