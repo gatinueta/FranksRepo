@@ -2,6 +2,9 @@
 #include <array>
 #include <vector>
 #include <list>
+#include <algorithm>
+#include <memory>
+#include <iterator>
 
 const static int DIM = 8;
 
@@ -238,11 +241,7 @@ public:
         m_content = nullptr;
     }
     Piece *put(Piece& p);
-    Piece *remove() {
-        Piece *old = m_content;
-        m_content = nullptr;
-        return old;
-    }
+    Piece *remove();
     const Piece* get() const {
         return m_content;
     }
@@ -292,6 +291,14 @@ public:
     Point getKingPos(bool black) const {
         return black ? m_bKingPos : m_wKingPos;
     }
+    void setKingPos(bool black, Point pos) {
+        if (black) {
+            m_bKingPos = pos;
+        } else {
+            m_wKingPos = pos;
+        }
+    }
+    
     Field& get(Point p) {
         return m_b[p.y + DIM*p.x];
     }
@@ -352,6 +359,13 @@ Piece *Field::put(Piece& p) {
         return old;
 }
 
+Piece *Field::remove() {
+        Piece *old = m_content;
+        m_content = nullptr;
+        m_b->getPieces(old->isBlack()).remove(old);
+        return old;
+}
+    
 std::vector<Point> Piece::getDirectTargets() const {
     std::vector<Point> targets;
     const Board *b = m_field->getBoard();
@@ -459,6 +473,15 @@ std::ostream& operator<<(std::ostream &strm, const Board &b) {
 }
 
 
+std::ostream& operator<<(std::ostream &strm, const Piece &p) {
+    if (p.getField()) {
+        strm << p.sym() << p.getField()->getPos();
+    } else {
+        strm << p.sym() << "(OFFBOARD)";
+    }
+    return strm;
+}
+
 typedef std::shared_ptr<Piece> P_Piece;
 
 template<typename T>
@@ -512,7 +535,7 @@ struct Move {
 
 class Game {
     Board m_b;
-    std::vector<P_Piece> m_all_pieces;
+    std::vector<P_Piece> m_ptr_pieces;
     std::vector<Move> m_moves;
 public:
     Game() {
@@ -532,14 +555,14 @@ public:
         if (!m_b.validate()) {
             std::cout << "error: validate failed" << std::endl;
         }
-        m_all_pieces.insert(m_all_pieces.end(), white_pawns.begin(), white_pawns.end());
-        m_all_pieces.insert(m_all_pieces.end(), black_pawns.begin(), black_pawns.end());
-        m_all_pieces.insert(m_all_pieces.end(), white_pieces.begin(), white_pieces.end());
-        m_all_pieces.insert(m_all_pieces.end(), black_pieces.begin(), black_pieces.end());
+        m_ptr_pieces.insert(m_ptr_pieces.end(), white_pawns.begin(), white_pawns.end());
+        m_ptr_pieces.insert(m_ptr_pieces.end(), black_pawns.begin(), black_pawns.end());
+        m_ptr_pieces.insert(m_ptr_pieces.end(), white_pieces.begin(), white_pieces.end());
+        m_ptr_pieces.insert(m_ptr_pieces.end(), black_pieces.begin(), black_pieces.end());
     }
     bool makeMove(Piece& p, Point to) {
         if (p.isBlack() == m_b.whitesTurn()) {
-           std::cout << "white's turn: " << m_b.whitesTurn() << std::endl;
+           std::cout << "error: moving " << p << ", white's turn: " << m_b.whitesTurn() << std::endl;
            return false;
         }
         Move move;
@@ -552,6 +575,10 @@ public:
         
         m_moves.push_back(move);
         m_b.setWhitesTurn(!m_b.whitesTurn());
+        if (p.isKing()) {
+            m_b.setKingPos(p.isBlack(), to);
+        }
+        // TODO promotion
         return true;
     }
 
@@ -571,6 +598,9 @@ public:
             m_b.get(move.to).put(*move.capturedPiece);
         }
         m_b.setWhitesTurn(!m_b.whitesTurn());
+         if (p->isKing()) {
+            m_b.setKingPos(p->isBlack(), move.from);
+        }
         return true;
     }
 };   
@@ -628,7 +658,25 @@ int main(int argc, char **argv) {
     }
     std::cout << b << std::endl;
     g.retractMove();
-    std::cout << b << std::endl;
+   
+    while(true) {
+        std::cout << b << std::endl;
+       
+        auto activePieces = b.getPieces(!b.whitesTurn());
+        Piece *movingPiece = nullptr;
+        Point target;
+        for (Piece *p: activePieces) {
+            std::vector<Point> moves = p->getMoves();
+            if (moves.size() > 0) {
+                movingPiece = p;
+                target = moves[0];
+            }
+            std::cout << *p << ": " << moves << std::endl;
+        }
+        if (movingPiece == nullptr || !g.makeMove(*movingPiece, target)) {
+            break;
+        }
+    }
     return 0;
 }
 
