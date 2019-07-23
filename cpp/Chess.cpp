@@ -725,12 +725,14 @@ int main(int argc, char **argv) {
    
     while(true) {
         std::cout << b << std::endl;
-       
         auto activePieces = b.getPieces(!b.whitesTurn());
+        std::vector<Piece*> piecesVec = { std::begin(activePieces), std::end(activePieces) };
+        std::random_shuffle(piecesVec.begin(), piecesVec.end());
         Piece *movingPiece = nullptr;
         Point target;
         for (Piece *p: activePieces) {
             std::vector<Point> moves = p->getMoves();
+            std::random_shuffle(moves.begin(), moves.end());
             if (moves.size() > 0) {
                 movingPiece = p;
                 target = moves[0];
