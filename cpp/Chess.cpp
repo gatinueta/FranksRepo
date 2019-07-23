@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <memory>
 #include <iterator>
+#include <sstream>
 
 const static int DIM = 8;
 
@@ -63,15 +64,15 @@ std::ostream& operator<<(std::ostream &strm, const Point &p) {
 class Field;
 
 class Piece {
-   bool m_black;
 protected:
+   bool m_black;
    Field* m_field;
    std::vector<Point> getDirectTargets() const;
    std::vector<Point> getIterTargets() const;
 public:
    Piece() : m_field(nullptr) {
    }
-   void setField(Field *field) {
+   virtual void setField(Field *field) {
      m_field = field;
    }
    const Field *getField() const {
@@ -103,23 +104,57 @@ public:
      return {};
    }
    std::vector<Point> getMoves() const;
+   virtual ~Piece() {
+   }
 };
 
 class Pawn : public Piece {
+    Piece *m_promoted;
 public:
-    Pawn() {
+    Pawn() : m_promoted(nullptr) {
         std::cout << "creating pawn" << std::endl;
+        
     }
     const char getSym() const { 
-        return 'P';
+        if (m_promoted) {
+            return m_promoted->getSym();
+        } else {
+            return 'P';
+        }
     }
     ~Pawn() {
         std::cout << "destroying pawn" << std::endl;
+        if (m_promoted) {
+            delete m_promoted;
+        }
     }
     bool isPawn() const {
-        return true;
+        return m_promoted == nullptr;
     }
     std::vector<Point> getTargets() const;
+    
+    void setField(Field* f) {
+        Piece::setField(f);
+        if (m_promoted) {
+            m_promoted->setField(f);
+        }
+    }
+
+    template<typename T> void promote() {
+        if (m_promoted != nullptr) {
+            std::ostringstream strstream;
+            strstream << "already promoted to " << m_promoted;
+            
+            throw std::runtime_error(strstream.str());
+        }
+        m_promoted = new T();
+        m_promoted->setBlack(m_black);
+        m_promoted->setField(m_field);
+    }
+    void unpromote() {
+        delete m_promoted;
+        m_promoted = nullptr;
+    }
 };
 
 class Knight : public Piece {
@@ -424,6 +459,9 @@ std::vector<Point> Queen::getTargets() const {
 }
 
 std::vector<Point> Pawn::getTargets() const {
+    if (m_promoted) {
+        return m_promoted->getTargets();
+    } 
     std::vector<Point> targets;
     const Board *b = m_field->getBoard();
     Point pos = m_field->getPos();
@@ -531,7 +569,20 @@ struct Move {
     Point to;
     const Piece *piece;
     Piece *capturedPiece;
+    bool promotion;
 };
+
+std::ostream& operator<< (std::ostream& out, const Move& m) {
+    std::string cap;
+    if (m.capturedPiece != nullptr) {
+        cap = "X";
+    }
+    out << m.piece->getSym() << m.from << cap << m.to;
+    if (m.promotion) {
+        out << "=" << *m.piece;
+    }
+    return out;
+}
 
 class Game {
     Board m_b;
@@ -540,6 +591,9 @@ class Game {
 public:
     Game() {
         m_b.setGame(this);
+    }
+    const std::vector<Move>& getMoves() const {
+        return m_moves;
     }
     Board& getBoard() {
         return m_b;
@@ -572,13 +626,18 @@ public:
         
         m_b.get(move.from).remove();
         move.capturedPiece = m_b.get(to).put(p);
+        if (p.isPawn() && (to.y == 0 || to.y == DIM-1)) {
+           dynamic_cast<Pawn&>(p).promote<Queen>();
+           move.promotion = true;
+        } else {
+           move.promotion = false;
+        }
         
         m_moves.push_back(move);
         m_b.setWhitesTurn(!m_b.whitesTurn());
         if (p.isKing()) {
             m_b.setKingPos(p.isBlack(), to);
         }
-        // TODO promotion
         return true;
     }
 
@@ -592,8 +651,12 @@ public:
             std::cerr << "can't find piece of last move" << std::endl;
             return false;
         }
+        if (move.promotion) {
+            dynamic_cast<Pawn*>(p)->unpromote();
+        }
         m_moves.pop_back();
         m_b.get(move.from).put(*p);
+
         if (move.capturedPiece != nullptr) {
             m_b.get(move.to).put(*move.capturedPiece);
         }
@@ -610,21 +673,22 @@ std::vector<Point> Piece::getMoves() const {
      Game *game = that->m_field->getBoardForUpdate()->getGame();
      std::vector<Point> moves;
      std::vector<Point> targets = getTargets();
-     Point kingPos = game->getBoard().getKingPos(this->isBlack());
      for (Point target: getTargets()) {
+        // check if check
         game->makeMove(*that, target);
-        // check if chess
-        bool inChess = false;
+        Point kingPos = game->getBoard().getKingPos(this->isBlack());
+        bool inCheck = false;
         for (Piece* p: game->getBoard().getPieces(!this->isBlack())) {
             auto oppTargets = p->getTargets();
             if (std::find(oppTargets.begin(), oppTargets.end(), kingPos) != oppTargets.end()) {
-                inChess = true;
+                std::cout << *this << target << " doesn't work because " << kingPos << " is in check by " << *p << std::endl;
+                inCheck = true;
                 break;
             }
         }
         
         game->retractMove();
-        if (!inChess) {
+        if (!inCheck) {
             moves.push_back(target);
         }
      }
@@ -676,6 +740,7 @@ int main(int argc, char **argv) {
         if (movingPiece == nullptr || !g.makeMove(*movingPiece, target)) {
             break;
         }
+        std::cout << "made move: " << g.getMoves().back() << std::endl;
     }
     return 0;
 }
