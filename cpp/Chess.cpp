@@ -104,6 +104,7 @@ public:
      return {};
    }
    std::vector<Point> getMoves() const;
+   virtual float value() const = 0;
    virtual ~Piece() {
    }
 };
@@ -155,6 +156,13 @@ public:
         delete m_promoted;
         m_promoted = nullptr;
     }
+    float value() const {
+        if (m_promoted) {
+            return m_promoted->value();
+        } else {
+            return 1.0;
+        }
+    }
 };
 
 class Knight : public Piece {
@@ -167,6 +175,9 @@ public:
         return M_INCS;
     }
     std::vector<Point> getTargets() const;
+    float value() const {
+        return 3.5;
+    }
 };
 
 const std::vector<Point> Knight::M_INCS = { 
@@ -186,6 +197,9 @@ public:
     const std::vector<Point> getIncs() const {
         return M_INCS;
     }
+    float value() const {
+        return 5.0;
+    }
 };
 
 class Queen : public Piece {
@@ -198,6 +212,9 @@ public:
     const std::vector<Point> getIncs() const {
         return M_INCS;
     }
+    float value() const {
+        return 9.0;
+    }
 };
 
 class Bishop : public Piece {
@@ -209,6 +226,9 @@ public:
     std::vector<Point> getTargets() const;
     const std::vector<Point> getIncs() const {
         return M_INCS;
+    }
+    float value() const {
+        return 3.5;
     }
 };
 
@@ -243,6 +263,9 @@ public:
         return M_INCS;
     }
     std::vector<Point> getTargets() const;
+    float value() const {
+        return 1000.0;
+    }
 };
 
 const std::vector<Point> King::M_INCS = { 
@@ -379,6 +402,16 @@ public:
             }
          }
          return true;
+    }
+    float eval() {
+        float value = 0.0;
+        for (Piece *p: m_whitePieces) {
+            value += p->value();
+        }
+        for (Piece *p: m_blackPieces) {
+            value -= p->value();
+        }
+        return value;
     }
 };
 
@@ -565,9 +598,11 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
 
 
 struct Move {
+    Move() : piece(nullptr), capturedPiece(nullptr) {
+    }
     Point from;
     Point to;
-    const Piece *piece;
+    Piece *piece;
     Piece *capturedPiece;
     bool promotion;
 };
@@ -614,10 +649,10 @@ public:
         m_ptr_pieces.insert(m_ptr_pieces.end(), white_pieces.begin(), white_pieces.end());
         m_ptr_pieces.insert(m_ptr_pieces.end(), black_pieces.begin(), black_pieces.end());
     }
-    bool makeMove(Piece& p, Point to) {
+    const Move *makeMove(Piece& p, Point to) {
         if (p.isBlack() == m_b.whitesTurn()) {
            std::cout << "error: moving " << p << ", white's turn: " << m_b.whitesTurn() << std::endl;
-           return false;
+           return nullptr;
         }
         Move move;
         move.from = p.getField()->getPos();
@@ -638,7 +673,7 @@ public:
         if (p.isKing()) {
             m_b.setKingPos(p.isBlack(), to);
         }
-        return true;
+        return &m_moves.back();
     }
 
     bool retractMove() {
@@ -666,6 +701,29 @@ public:
         }
         return true;
     }
+    Move getBestMove() {
+        float bestEval = -1000;
+        Move bestMove;
+        bool whitesTurn = m_b.whitesTurn();
+        auto activePieces = m_b.getPieces(!whitesTurn);
+        for (Piece *p: activePieces) {
+            for (Point target: p->getMoves()) {
+                const Move* move = makeMove(*p, target);
+                float evaluation = m_b.eval();
+                std::cout << "eval of " << *move << ": " << evaluation << std::endl;
+                if (!whitesTurn) {
+                    evaluation = -evaluation;
+                }
+                if (evaluation > bestEval) {
+                    bestEval = evaluation;
+                    bestMove = *move;
+                }
+                retractMove();
+            }
+        }
+        return bestMove;
+    }
+        
 };   
 
 std::vector<Point> Piece::getMoves() const {
@@ -695,6 +753,18 @@ std::vector<Point> Piece::getMoves() const {
      return moves;
 }
 
+void playGame(Game& g) {
+    while(true) {
+        std::cout << g.getBoard() << std::endl;
+        Move move = g.getBestMove();
+        if (move.piece) {
+            g.makeMove(*move.piece, move.to);
+            std::cout << "made move: " << g.getMoves().back() << std::endl;
+        } else {
+            break;
+        }
+    }
+}
 
 int main(int argc, char **argv) {
     Game g;
@@ -722,7 +792,12 @@ int main(int argc, char **argv) {
     }
     std::cout << b << std::endl;
     g.retractMove();
-   
+    
+    playGame(g);
+}
+
+
+void random_game(Board& b, Game& g) {
     while(true) {
         std::cout << b << std::endl;
         auto activePieces = b.getPieces(!b.whitesTurn());
@@ -744,7 +819,6 @@ int main(int argc, char **argv) {
         }
         std::cout << "made move: " << g.getMoves().back() << std::endl;
     }
-    return 0;
 }
 
 
