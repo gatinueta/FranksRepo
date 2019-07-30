@@ -345,6 +345,7 @@ public:
     Game *getGame() {
         return m_game;
     }
+    bool hasThreats(Point point, bool black) const;
     std::list<Piece*>& getPieces(bool black) {
         if (black) {
             return m_blackPieces;
@@ -352,7 +353,13 @@ public:
             return m_whitePieces;
         }
     }
-
+    const std::list<Piece*>& getConstPieces(bool black) const {
+        if (black) {
+            return m_blackPieces;
+        } else {
+            return m_whitePieces;
+        }
+    }
     Point getKingPos(bool black) const {
         return black ? m_bKingPos : m_wKingPos;
     }
@@ -488,7 +495,8 @@ std::vector<Point> King::getTargets() const {
             b->at(Point(1, row)).isEmpty() &&
             b->at(Point(2, row)).isEmpty() &&
             b->at(Point(3, row)).isEmpty() &&
-            true // TODO: check for chess at 3, 4
+            !b->hasThreats(Point(3, row), m_black) &&
+            !b->hasThreats(Point(4, row), m_black)
          ) {
             directTargets.push_back(Point(2, row));
          }
@@ -496,7 +504,8 @@ std::vector<Point> King::getTargets() const {
             b->at(Point(7, row)).get()->getNofMoves() == 0 &&
             b->at(Point(6, row)).isEmpty() &&
             b->at(Point(5, row)).isEmpty() &&
-            true // TODO: check for chess at 4, 5
+            !b->hasThreats(Point(4, row), m_black) &&
+            !b->hasThreats(Point(5, row), m_black)
           ) {
             directTargets.push_back(Point(6, row));
           }
@@ -634,6 +643,7 @@ struct Move {
     Piece *piece;
     Piece *capturedPiece;
     bool promotion;
+    bool castling;
 };
 
 std::ostream& operator<< (std::ostream& out, const Move& m) {
@@ -641,9 +651,17 @@ std::ostream& operator<< (std::ostream& out, const Move& m) {
     if (m.capturedPiece != nullptr) {
         cap = "X";
     }
-    out << m.piece->getSym() << m.from << cap << m.to;
-    if (m.promotion) {
-        out << "=" << *m.piece;
+    if (m.castling) {
+        if (m.from.y < m.to.y) {
+            out << "0-0";
+        } else {
+            out << "0-0-0";
+        }
+    } else {
+        out << m.piece->getSym() << m.from << cap << m.to;
+        if (m.promotion) {
+            out << "=" << *m.piece;
+        }
     }
     return out;
 }
@@ -665,6 +683,7 @@ public:
     void setBoard(Board& b) {
         m_b = b;
     }
+
     void setup() {
         auto white_pawns = place_pawns(m_b, '2', false);
         auto black_pawns = place_pawns(m_b, '7', true);
@@ -696,7 +715,16 @@ public:
         } else {
            move.promotion = false;
         }
-        
+        if (p.isKing() && abs(move.to.x-move.from.x) > 1) {
+            move.castling = true;
+            Point rookTarget = Point(move.from.x, (move.to.y+move.from.y)/2);
+            Point rookPos = Point(move.from.x, move.to.y > move.from.y ? 7 : 0);
+            Piece* rook = m_b.get(rookPos).remove();
+            m_b.get(rookTarget).put(*rook);
+        } else {
+            move.castling = false;
+        }
+
         m_moves.push_back(move);
         p.incNofMoves(1);
         m_b.setWhitesTurn(!m_b.whitesTurn());
@@ -721,6 +749,12 @@ public:
         }
         m_moves.pop_back();
         m_b.get(move.from).put(*p);
+        if (move.castling) {
+            Point rookTarget = Point(move.from.x, (move.to.y+move.from.y)/2);
+            Point rookPos = Point(move.from.x, move.to.y > move.from.y ? 7 : 0);
+            Piece *rook = m_b.get(rookTarget).remove();
+            m_b.get(rookPos).put(*rook);
+        }
         p->incNofMoves(-1);
 
         if (move.capturedPiece != nullptr) {
@@ -758,6 +792,16 @@ public:
         
 };   
 
+bool Board::hasThreats(Point point, bool black) const {
+   for (Piece* p: getConstPieces(!black)) {
+        auto oppTargets = p->getTargets();
+        if (std::find(oppTargets.begin(), oppTargets.end(), point) != oppTargets.end()) {
+            return true;
+        }
+   }
+   return false;
+}
+
 std::vector<Point> Piece::getMoves() const {
      Piece* that = const_cast<Piece*>(this);
      Game *game = that->m_field->getBoardForUpdate()->getGame();
@@ -766,17 +810,11 @@ std::vector<Point> Piece::getMoves() const {
      for (Point target: getTargets()) {
         // check if check
         game->makeMove(*that, target);
-        Point kingPos = game->getBoard().getKingPos(this->isBlack());
-        bool inCheck = false;
-        for (Piece* p: game->getBoard().getPieces(!this->isBlack())) {
-            auto oppTargets = p->getTargets();
-            if (std::find(oppTargets.begin(), oppTargets.end(), kingPos) != oppTargets.end()) {
-                std::cout << *this << target << " doesn't work because " << kingPos << " is in check by " << *p << std::endl;
-                inCheck = true;
-                break;
-            }
+        Point kingPos = game->getBoard().getKingPos(this->isBlack()); 
+        bool inCheck = game->getBoard().hasThreats(kingPos, this->isBlack());
+        if (inCheck) {
+            std::cout << *this << target << " doesn't work because " << kingPos << " is in check"  << std::endl;
         }
-        
         game->retractMove();
         if (!inCheck) {
             moves.push_back(target);
