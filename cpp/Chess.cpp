@@ -69,8 +69,9 @@ protected:
    Field* m_field;
    std::vector<Point> getDirectTargets() const;
    std::vector<Point> getIterTargets() const;
+   int m_nofMoves;
 public:
-   Piece() : m_field(nullptr) {
+   Piece() : m_field(nullptr), m_nofMoves(0) {
    }
    virtual void setField(Field *field) {
      m_field = field;
@@ -86,6 +87,12 @@ public:
    }
    bool isBlack() const {
      return m_black;
+   }
+   int getNofMoves() const {
+     return m_nofMoves;
+   }
+   void incNofMoves(int inc) {
+     m_nofMoves += inc;
    }
    virtual const char getSym() const = 0;
    
@@ -472,7 +479,29 @@ std::vector<Point> Piece::getIterTargets() const {
 }
 
 std::vector<Point> King::getTargets() const {
-    return getDirectTargets();
+    std::vector<Point> directTargets = getDirectTargets();
+    if (m_nofMoves == 0 && m_field->getPos().y == 4) {
+        const Board *b = m_field->getBoard();
+        int row = m_field->getPos().y;
+        if (!b->at(Point(0, row)).isEmpty() && 
+            b->at(Point(0, row)).get()->getNofMoves() == 0 &&
+            b->at(Point(1, row)).isEmpty() &&
+            b->at(Point(2, row)).isEmpty() &&
+            b->at(Point(3, row)).isEmpty() &&
+            true // TODO: check for chess at 3, 4
+         ) {
+            directTargets.push_back(Point(2, row));
+         }
+         if (!b->at(Point(7, row)).isEmpty() &&
+            b->at(Point(7, row)).get()->getNofMoves() == 0 &&
+            b->at(Point(6, row)).isEmpty() &&
+            b->at(Point(5, row)).isEmpty() &&
+            true // TODO: check for chess at 4, 5
+          ) {
+            directTargets.push_back(Point(6, row));
+          }
+     }
+     return directTargets;
 }
 
 std::vector<Point> Knight::getTargets() const {
@@ -669,6 +698,7 @@ public:
         }
         
         m_moves.push_back(move);
+        p.incNofMoves(1);
         m_b.setWhitesTurn(!m_b.whitesTurn());
         if (p.isKing()) {
             m_b.setKingPos(p.isBlack(), to);
@@ -691,6 +721,7 @@ public:
         }
         m_moves.pop_back();
         m_b.get(move.from).put(*p);
+        p->incNofMoves(-1);
 
         if (move.capturedPiece != nullptr) {
             m_b.get(move.to).put(*move.capturedPiece);
@@ -701,6 +732,7 @@ public:
         }
         return true;
     }
+
     Move getBestMove() {
         float bestEval = -1000;
         Move bestMove;
