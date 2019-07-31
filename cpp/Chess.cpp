@@ -79,7 +79,7 @@ public:
    const Field *getField() const {
      return m_field;
    }
-   Field *getFieldForUpdate() {
+   Field *getField() {
      return m_field;
    }
    void setBlack(bool black) {
@@ -110,7 +110,7 @@ public:
    virtual const std::vector<Point> getIncs() const {
      return {};
    }
-   std::vector<Point> getMoves() const;
+   std::vector<Point> getMoveTargets() const;
    virtual float value() const = 0;
    virtual ~Piece() {
    }
@@ -299,7 +299,7 @@ public:
     const Board* getBoard() const {
         return m_b;
     }
-    Board* getBoardForUpdate() {
+    Board* getBoard() {
         return m_b;
     }
     Field() {
@@ -310,7 +310,7 @@ public:
     const Piece* get() const {
         return m_content;
     }
-    Piece* getPiece() {
+    Piece* get() {
         return m_content;
     }
     bool isEmpty() const {
@@ -353,7 +353,7 @@ public:
             return m_whitePieces;
         }
     }
-    const std::list<Piece*>& getConstPieces(bool black) const {
+    const std::list<Piece*>& getPieces(bool black) const {
         if (black) {
             return m_blackPieces;
         } else {
@@ -486,8 +486,8 @@ std::vector<Point> Piece::getIterTargets() const {
 }
 
 std::vector<Point> King::getTargets() const {
-    std::vector<Point> directTargets = getDirectTargets();
-    if (m_nofMoves == 0 && m_field->getPos().y == 4) {
+    std::vector<Point> kingTargets = getDirectTargets();
+    if (m_nofMoves == 0 && m_field->getPos().x == 4) {
         const Board *b = m_field->getBoard();
         int row = m_field->getPos().y;
         if (!b->at(Point(0, row)).isEmpty() && 
@@ -498,7 +498,7 @@ std::vector<Point> King::getTargets() const {
             !b->hasThreats(Point(3, row), m_black) &&
             !b->hasThreats(Point(4, row), m_black)
          ) {
-            directTargets.push_back(Point(2, row));
+            kingTargets.push_back(Point(2, row));
          }
          if (!b->at(Point(7, row)).isEmpty() &&
             b->at(Point(7, row)).get()->getNofMoves() == 0 &&
@@ -507,10 +507,10 @@ std::vector<Point> King::getTargets() const {
             !b->hasThreats(Point(4, row), m_black) &&
             !b->hasThreats(Point(5, row), m_black)
           ) {
-            directTargets.push_back(Point(6, row));
+            kingTargets.push_back(Point(6, row));
           }
      }
-     return directTargets;
+     return kingTargets;
 }
 
 std::vector<Point> Knight::getTargets() const {
@@ -773,7 +773,7 @@ public:
         bool whitesTurn = m_b.whitesTurn();
         auto activePieces = m_b.getPieces(!whitesTurn);
         for (Piece *p: activePieces) {
-            for (Point target: p->getMoves()) {
+            for (Point target: p->getMoveTargets()) {
                 const Move* move = makeMove(*p, target);
                 float evaluation = m_b.eval();
                 std::cout << "eval of " << *move << ": " << evaluation << std::endl;
@@ -793,7 +793,7 @@ public:
 };   
 
 bool Board::hasThreats(Point point, bool black) const {
-   for (Piece* p: getConstPieces(!black)) {
+   for (Piece* p: getPieces(!black)) {
         auto oppTargets = p->getTargets();
         if (std::find(oppTargets.begin(), oppTargets.end(), point) != oppTargets.end()) {
             return true;
@@ -802,10 +802,14 @@ bool Board::hasThreats(Point point, bool black) const {
    return false;
 }
 
-std::vector<Point> Piece::getMoves() const {
+std::vector<Point> Piece::getMoveTargets() const {
      Piece* that = const_cast<Piece*>(this);
-     Game *game = that->m_field->getBoardForUpdate()->getGame();
+     Game *game = that->m_field->getBoard()->getGame();
+        
      std::vector<Point> moves;
+     if (that->isBlack() == game->getBoard().whitesTurn()) {
+        return moves;
+     }
      std::vector<Point> targets = getTargets();
      for (Point target: getTargets()) {
         // check if check
@@ -823,7 +827,7 @@ std::vector<Point> Piece::getMoves() const {
      return moves;
 }
 
-void playGame(Game& g) {
+void auto_game(Game& g) {
     while(true) {
         std::cout << g.getBoard() << std::endl;
         Move move = g.getBestMove();
@@ -836,9 +840,39 @@ void playGame(Game& g) {
     }
 }
 
-int main(int argc, char **argv) {
-    Game g;
-    g.setup();
+void str_toupper(std::string& str) {
+    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+}
+
+void interactive_game(Game& g) {
+    Board& b = g.getBoard();
+    while(true) {
+        std::cout << b << std::endl;
+        std::cout << "enter move: ";
+        std::string movestr;
+        std::getline(std::cin, movestr);
+        str_toupper(movestr);
+        Point from = Point::convert(movestr.substr(0, 2));
+        Point to = Point::convert(movestr.substr(2, 2));
+        
+        Field& f = b.get(from);
+        if (f.isEmpty()) {
+            std::cerr << from << " is empty" << std::endl;
+        } else {
+            Piece *p = f.get();
+            auto targets = p->getMoveTargets();
+            if (std::find(targets.begin(), targets.end(), to) == targets.end()) {
+                std::cerr << to << " is not a legal move for " << *p << std::endl;
+                std::cerr << "legal moves: " << targets << std::endl;
+            } else {
+                g.makeMove(*p, to);
+                std::cout << g.getMoves().back() << std::endl;
+            }
+        }
+    }
+}
+
+void test_game(Game& g) {
     Board& b = g.getBoard();
 
     // test code
@@ -852,22 +886,20 @@ int main(int argc, char **argv) {
     Bishop bi;
     b.get("D4").put(bi);
     std::cout << b << std::endl;
-    std::cout << "white bishop moves: " << bi.getMoves() << std::endl;
+    std::cout << "white bishop moves: " << bi.getMoveTargets() << std::endl;
     b.get("D4").remove();
     targets = b.get("D7").get()->getTargets();
     std::cout << "D7 pawn targets: " << targets << std::endl; 
-    Piece *pawn = b.get("D2").getPiece();
+    Piece *pawn = b.get("D2").get();
     if (!g.makeMove(*pawn, pawn->getTargets()[0])) {
         std::cout << "can't make the move to " << targets[0] << std::endl;
     }
     std::cout << b << std::endl;
     g.retractMove();
-    
-    playGame(g);
 }
 
-
-void random_game(Board& b, Game& g) {
+void random_game(Game& g) {
+    Board& b = g.getBoard();
     while(true) {
         std::cout << b << std::endl;
         auto activePieces = b.getPieces(!b.whitesTurn());
@@ -876,7 +908,7 @@ void random_game(Board& b, Game& g) {
         Piece *movingPiece = nullptr;
         Point target;
         for (Piece *p: activePieces) {
-            std::vector<Point> moves = p->getMoves();
+            std::vector<Point> moves = p->getMoveTargets();
             std::random_shuffle(moves.begin(), moves.end());
             if (moves.size() > 0) {
                 movingPiece = p;
@@ -888,6 +920,31 @@ void random_game(Board& b, Game& g) {
             break;
         }
         std::cout << "made move: " << g.getMoves().back() << std::endl;
+    }
+}
+
+enum Mode { AUTO, TEST, RANDOM, INTERACTIVE };
+
+int main(int argc, char **argv) {
+    Game g;
+    g.setup();
+    Mode mode = RANDOM;
+    if (argc > 1) {
+        mode = static_cast<Mode>(std::stoi(argv[1]));
+    }
+    switch(mode) {
+    case TEST:
+        test_game(g);
+        break;
+    case RANDOM:
+        random_game(g);
+        break;
+    case INTERACTIVE:
+        interactive_game(g);
+        break;
+    case AUTO:
+        auto_game(g);
+        break;
     }
 }
 
