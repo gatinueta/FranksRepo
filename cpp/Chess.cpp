@@ -6,6 +6,18 @@
 #include <memory>
 #include <iterator>
 #include <sstream>
+#include <fstream>
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/vector.hpp>
+
+// Forward declaration of class boost::serialization::access
+namespace boost {
+namespace serialization {
+class access;
+}
+}
 
 const static int DIM = 8;
 
@@ -50,6 +62,10 @@ struct Point {
     }
     bool isOnBoard() const {
         return x >= 0 && x < DIM && y >= 0 && y < DIM;
+    }
+    template<typename Archive>
+    void serialize(Archive& ar, const unsigned version) {
+        ar & x & y; 
     }
 
 }; 
@@ -454,7 +470,7 @@ std::vector<Point> Piece::getDirectTargets() const {
     for (Point inc: getIncs()) {
         Point target = m_field->getPos() + inc;
         if (target.isOnBoard()) {
-            if ( b->at(target).isEmpty() || b->at(target).get()->isBlack() != isBlack()) {
+            if (b->at(target).isEmpty() || b->at(target).get()->isBlack() != isBlack()) {
                 targets.push_back(target);
             }
         }
@@ -644,6 +660,13 @@ struct Move {
     Piece *capturedPiece;
     bool promotion;
     bool castling;
+    // Allow serialization to access non-public data members.
+    friend class boost::serialization::access;
+
+    template<typename Archive>
+    void serialize(Archive& ar, const unsigned version) {
+        ar & from & to & piece & capturedPiece & promotion & castling;  // Simply serialize the data members of Move 
+    }
 };
 
 std::ostream& operator<< (std::ostream& out, const Move& m) {
@@ -717,8 +740,8 @@ public:
         }
         if (p.isKing() && abs(move.to.x-move.from.x) > 1) {
             move.castling = true;
-            Point rookTarget = Point(move.from.x, (move.to.y+move.from.y)/2);
-            Point rookPos = Point(move.from.x, move.to.y > move.from.y ? 7 : 0);
+            Point rookTarget = Point((move.to.x+move.from.x)/2, move.from.y);
+            Point rookPos = Point(move.to.x > move.from.x ? 7 : 0, move.from.y);
             Piece* rook = m_b.get(rookPos).remove();
             m_b.get(rookTarget).put(*rook);
         } else {
@@ -844,6 +867,26 @@ void str_toupper(std::string& str) {
     std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 }
 
+void serialize(const std::vector<Move>& obj) {
+   std::string fileName("moves.ser");
+   // Create an output archive
+   std::ofstream ofs(fileName);
+   boost::archive::text_oarchive ar(ofs);
+
+   ar & obj;
+}
+
+std::vector<Move> deserialize() {
+    std::string fileName("moves.ser");
+    std::ifstream ifs(fileName);
+    boost::archive::text_iarchive ar(ifs);
+    std::vector<Move> moves;
+    // Load data
+    ar & moves;
+
+    return moves;
+}
+
 void interactive_game(Game& g) {
     Board& b = g.getBoard();
     while(true) {
@@ -851,22 +894,29 @@ void interactive_game(Game& g) {
         std::cout << "enter move: ";
         std::string movestr;
         std::getline(std::cin, movestr);
-        str_toupper(movestr);
-        Point from = Point::convert(movestr.substr(0, 2));
-        Point to = Point::convert(movestr.substr(2, 2));
-        
-        Field& f = b.get(from);
-        if (f.isEmpty()) {
-            std::cerr << from << " is empty" << std::endl;
+        if (movestr == "save") {
+            serialize(g.getMoves());
+        } else if (movestr == "restore") {
+            auto moves = deserialize();
+            std::cout << "deserialized moves: " << moves << std::endl;
         } else {
-            Piece *p = f.get();
-            auto targets = p->getMoveTargets();
-            if (std::find(targets.begin(), targets.end(), to) == targets.end()) {
-                std::cerr << to << " is not a legal move for " << *p << std::endl;
-                std::cerr << "legal moves: " << targets << std::endl;
+            str_toupper(movestr);
+            Point from = Point::convert(movestr.substr(0, 2));
+            Point to = Point::convert(movestr.substr(2, 2));
+            
+            Field& f = b.get(from);
+            if (f.isEmpty()) {
+                std::cerr << from << " is empty" << std::endl;
             } else {
-                g.makeMove(*p, to);
-                std::cout << g.getMoves().back() << std::endl;
+                Piece *p = f.get();
+                auto targets = p->getMoveTargets();
+                if (std::find(targets.begin(), targets.end(), to) == targets.end()) {
+                    std::cerr << to << " is not a legal move for " << *p << std::endl;
+                    std::cerr << "legal moves: " << targets << std::endl;
+                } else {
+                    g.makeMove(*p, to);
+                    std::cout << g.getMoves().back() << std::endl;
+                }
             }
         }
     }
