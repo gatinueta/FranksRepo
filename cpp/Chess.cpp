@@ -10,7 +10,10 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/list.hpp>
+
 
 // Forward declaration of class boost::serialization::access
 namespace boost {
@@ -80,6 +83,7 @@ std::ostream& operator<<(std::ostream &strm, const Point &p) {
 class Field;
 
 class Piece {
+    friend class boost::serialization::access;
 protected:
    bool m_black;
    Field* m_field;
@@ -129,6 +133,10 @@ public:
    std::vector<Point> getMoveTargets() const;
    virtual float value() const = 0;
    virtual ~Piece() {
+   }
+   template<typename Archive>
+   void serialize(Archive& ar, const unsigned version) {
+       ar & m_black & m_field & m_nofMoves;
    }
 };
 
@@ -186,6 +194,11 @@ public:
             return 1.0;
         }
     }
+    template <typename Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+            ar & boost::serialization::base_object<Piece>(*this);
+    }
+
 };
 
 class Knight : public Piece {
@@ -200,6 +213,10 @@ public:
     std::vector<Point> getTargets() const;
     float value() const {
         return 3.5;
+    }
+    template <typename Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+            ar & boost::serialization::base_object<Piece>(*this);
     }
 };
 
@@ -223,6 +240,10 @@ public:
     float value() const {
         return 5.0;
     }
+    template <typename Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+            ar & boost::serialization::base_object<Piece>(*this);
+    }
 };
 
 class Queen : public Piece {
@@ -238,6 +259,10 @@ public:
     float value() const {
         return 9.0;
     }
+    template <typename Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+            ar & boost::serialization::base_object<Piece>(*this);
+    }
 };
 
 class Bishop : public Piece {
@@ -252,6 +277,10 @@ public:
     }
     float value() const {
         return 3.5;
+    }
+    template <typename Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+            ar & boost::serialization::base_object<Piece>(*this);
     }
 };
 
@@ -289,6 +318,10 @@ public:
     float value() const {
         return 1000.0;
     }
+    template <typename Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+            ar & boost::serialization::base_object<Piece>(*this);
+    }
 };
 
 const std::vector<Point> King::M_INCS = { 
@@ -321,6 +354,10 @@ public:
     Field() {
         m_content = nullptr;
     }
+    /**
+     * putting a piece on this field, returning the one
+     * that was there before
+     */
     Piece *put(Piece& p);
     Piece *remove();
     const Piece* get() const {
@@ -332,6 +369,10 @@ public:
     bool isEmpty() const {
         return m_content == nullptr;
     }
+    template<typename Archive>
+    void serialize(Archive& ar, const unsigned version) {
+       ar & m_content & m_b & m_pos;
+    }
 };
 
 class Game;
@@ -340,11 +381,11 @@ class Board {
     Field m_b[DIM * DIM];
     std::list<Piece*> m_whitePieces;
     std::list<Piece*> m_blackPieces;
-    bool m_whitesTurn;
+    bool m_blacksTurn;
     Point m_bKingPos, m_wKingPos;
     Game *m_game;
 public:
-    Board() : m_whitesTurn(true) {
+    Board() : m_blacksTurn(false) {
         Point p;
         for (int y=0; y<DIM; y++) {
             p.y = y;
@@ -361,6 +402,10 @@ public:
     Game *getGame() {
         return m_game;
     }
+    /**
+     * whether the point has threats (targets, not necessarily legal)
+     * by pieces by opponent of 'black'
+     */
     bool hasThreats(Point point, bool black) const;
     std::list<Piece*>& getPieces(bool black) {
         if (black) {
@@ -399,11 +444,11 @@ public:
     Field& get(const char col, const char row) {
         return get(Point::convert(col, row));
     }
-    bool whitesTurn() const {
-        return m_whitesTurn;
+    bool blacksTurn() const {
+        return m_blacksTurn;
     }
-    void setWhitesTurn(bool whitesTurn) {
-        m_whitesTurn = whitesTurn;
+    void setBlacksTurn(bool blacksTurn) {
+        m_blacksTurn = blacksTurn;
     }
     bool validate() {
         int n_wKings = 0, n_bKings = 0;
@@ -433,6 +478,9 @@ public:
          }
          return true;
     }
+    /**
+     * evaluating the position, + for white's advantage, - for black's
+     */
     float eval() {
         float value = 0.0;
         for (Piece *p: m_whitePieces) {
@@ -442,6 +490,10 @@ public:
             value -= p->value();
         }
         return value;
+    }
+    template<typename Archive>
+    void serialize(Archive& ar, const unsigned version) {
+        ar & m_b & m_whitePieces & m_blackPieces & m_blacksTurn & m_bKingPos & m_wKingPos & m_game;
     }
 };
 
@@ -510,21 +562,18 @@ std::vector<Point> King::getTargets() const {
             b->at(Point(0, row)).get()->getNofMoves() == 0 &&
             b->at(Point(1, row)).isEmpty() &&
             b->at(Point(2, row)).isEmpty() &&
-            b->at(Point(3, row)).isEmpty() &&
-            !b->hasThreats(Point(3, row), m_black) &&
-            !b->hasThreats(Point(4, row), m_black)
+            b->at(Point(3, row)).isEmpty() 
          ) {
             kingTargets.push_back(Point(2, row));
          }
          if (!b->at(Point(7, row)).isEmpty() &&
             b->at(Point(7, row)).get()->getNofMoves() == 0 &&
             b->at(Point(6, row)).isEmpty() &&
-            b->at(Point(5, row)).isEmpty() &&
-            !b->hasThreats(Point(4, row), m_black) &&
-            !b->hasThreats(Point(5, row), m_black)
+            b->at(Point(5, row)).isEmpty()
           ) {
             kingTargets.push_back(Point(6, row));
           }
+          //TODO check castling legality later...
      }
      return kingTargets;
 }
@@ -665,7 +714,7 @@ struct Move {
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned version) {
-        ar & from & to & piece & capturedPiece & promotion & castling;  // Simply serialize the data members of Move 
+        ar & from & to & piece & capturedPiece & promotion & castling;
     }
 };
 
@@ -676,9 +725,9 @@ std::ostream& operator<< (std::ostream& out, const Move& m) {
     }
     if (m.castling) {
         if (m.from.y < m.to.y) {
-            out << "0-0";
-        } else {
             out << "0-0-0";
+        } else {
+            out << "0-0";
         }
     } else {
         out << m.piece->getSym() << m.from << cap << m.to;
@@ -691,6 +740,7 @@ std::ostream& operator<< (std::ostream& out, const Move& m) {
 
 class Game {
     Board m_b;
+    //TODO: unneeded and not serialized
     std::vector<P_Piece> m_ptr_pieces;
     std::vector<Move> m_moves;
 public:
@@ -721,8 +771,8 @@ public:
         m_ptr_pieces.insert(m_ptr_pieces.end(), black_pieces.begin(), black_pieces.end());
     }
     const Move *makeMove(Piece& p, Point to) {
-        if (p.isBlack() == m_b.whitesTurn()) {
-           std::cout << "error: moving " << p << ", white's turn: " << m_b.whitesTurn() << std::endl;
+        if (p.isBlack() != m_b.blacksTurn()) {
+           std::cout << "error: moving " << p << ", black's turn: " << m_b.blacksTurn() << std::endl;
            return nullptr;
         }
         Move move;
@@ -750,7 +800,7 @@ public:
 
         m_moves.push_back(move);
         p.incNofMoves(1);
-        m_b.setWhitesTurn(!m_b.whitesTurn());
+        m_b.setBlacksTurn(!m_b.blacksTurn());
         if (p.isKing()) {
             m_b.setKingPos(p.isBlack(), to);
         }
@@ -773,8 +823,8 @@ public:
         m_moves.pop_back();
         m_b.get(move.from).put(*p);
         if (move.castling) {
-            Point rookTarget = Point(move.from.x, (move.to.y+move.from.y)/2);
-            Point rookPos = Point(move.from.x, move.to.y > move.from.y ? 7 : 0);
+            Point rookTarget = Point((move.to.x+move.from.x)/2, move.from.y);
+            Point rookPos = Point(move.to.x > move.from.x ? 7 : 0, move.from.y);
             Piece *rook = m_b.get(rookTarget).remove();
             m_b.get(rookPos).put(*rook);
         }
@@ -783,7 +833,7 @@ public:
         if (move.capturedPiece != nullptr) {
             m_b.get(move.to).put(*move.capturedPiece);
         }
-        m_b.setWhitesTurn(!m_b.whitesTurn());
+        m_b.setBlacksTurn(!m_b.blacksTurn());
          if (p->isKing()) {
             m_b.setKingPos(p->isBlack(), move.from);
         }
@@ -793,14 +843,14 @@ public:
     Move getBestMove() {
         float bestEval = -1000;
         Move bestMove;
-        bool whitesTurn = m_b.whitesTurn();
-        auto activePieces = m_b.getPieces(!whitesTurn);
+        bool blacksTurn = m_b.blacksTurn();
+        auto activePieces = m_b.getPieces(blacksTurn);
         for (Piece *p: activePieces) {
             for (Point target: p->getMoveTargets()) {
                 const Move* move = makeMove(*p, target);
                 float evaluation = m_b.eval();
                 std::cout << "eval of " << *move << ": " << evaluation << std::endl;
-                if (!whitesTurn) {
+                if (blacksTurn) {
                     evaluation = -evaluation;
                 }
                 if (evaluation > bestEval) {
@@ -812,7 +862,12 @@ public:
         }
         return bestMove;
     }
-        
+
+    template<typename Archive>
+    void serialize(Archive& ar, const unsigned version) {
+        // C++11 smart pointers not serializable by boost
+        ar & m_b & m_moves;
+    }
 };   
 
 bool Board::hasThreats(Point point, bool black) const {
@@ -828,20 +883,31 @@ bool Board::hasThreats(Point point, bool black) const {
 std::vector<Point> Piece::getMoveTargets() const {
      Piece* that = const_cast<Piece*>(this);
      Game *game = that->m_field->getBoard()->getGame();
-        
+     Board& b = game->getBoard();   
      std::vector<Point> moves;
-     if (that->isBlack() == game->getBoard().whitesTurn()) {
+     if (that->isBlack() != game->getBoard().blacksTurn()) {
         return moves;
      }
      std::vector<Point> targets = getTargets();
+     Point origPos = m_field->getPos();
      for (Point target: getTargets()) {
+        bool inCheck = false;
+        // check castling legality (TODO move to King?)
+        if (isKing() && abs(target.x-origPos.x)>1) {
+            Point adjPos((origPos.x+target.x)/2, origPos.y);
+            if (b.hasThreats(origPos, isBlack()) || b.hasThreats(adjPos, isBlack())) {
+                inCheck = true;
+             }
+        }
         // check if check
         game->makeMove(*that, target);
-        Point kingPos = game->getBoard().getKingPos(this->isBlack()); 
-        bool inCheck = game->getBoard().hasThreats(kingPos, this->isBlack());
-        if (inCheck) {
-            std::cout << *this << target << " doesn't work because " << kingPos << " is in check"  << std::endl;
+        Point kingPos = b.getKingPos(isBlack()); 
+        if (b.hasThreats(kingPos, isBlack())) {
+            inCheck = true;
         }
+        if (inCheck) {
+            std::cout << *this << " doesn't work because " << kingPos << " is in check"  << std::endl;
+        }  
         game->retractMove();
         if (!inCheck) {
             moves.push_back(target);
@@ -867,24 +933,21 @@ void str_toupper(std::string& str) {
     std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 }
 
-void serialize(const std::vector<Move>& obj) {
+void serialize(const Game& game) {
    std::string fileName("moves.ser");
    // Create an output archive
    std::ofstream ofs(fileName);
    boost::archive::text_oarchive ar(ofs);
 
-   ar & obj;
+   ar & game;
 }
 
-std::vector<Move> deserialize() {
+void deserialize(Game& game) {
     std::string fileName("moves.ser");
     std::ifstream ifs(fileName);
     boost::archive::text_iarchive ar(ifs);
-    std::vector<Move> moves;
     // Load data
-    ar & moves;
-
-    return moves;
+    ar & game;
 }
 
 void interactive_game(Game& g) {
@@ -895,28 +958,35 @@ void interactive_game(Game& g) {
         std::string movestr;
         std::getline(std::cin, movestr);
         if (movestr == "save") {
-            serialize(g.getMoves());
+            serialize(g);
         } else if (movestr == "restore") {
-            auto moves = deserialize();
-            std::cout << "deserialized moves: " << moves << std::endl;
+            deserialize(g);
+            std::cout << "deserialized moves: " << g.getMoves() << std::endl;
+            b = g.getBoard();
+        } else if (movestr == "retract") {
+            g.retractMove();
         } else {
-            str_toupper(movestr);
-            Point from = Point::convert(movestr.substr(0, 2));
-            Point to = Point::convert(movestr.substr(2, 2));
-            
-            Field& f = b.get(from);
-            if (f.isEmpty()) {
-                std::cerr << from << " is empty" << std::endl;
-            } else {
-                Piece *p = f.get();
-                auto targets = p->getMoveTargets();
-                if (std::find(targets.begin(), targets.end(), to) == targets.end()) {
-                    std::cerr << to << " is not a legal move for " << *p << std::endl;
-                    std::cerr << "legal moves: " << targets << std::endl;
+            try {
+                str_toupper(movestr);
+                Point from = Point::convert(movestr.substr(0, 2));
+                Point to = Point::convert(movestr.substr(2, 2));
+                
+                Field& f = b.get(from);
+                if (f.isEmpty()) {
+                    std::cerr << from << " is empty" << std::endl;
                 } else {
-                    g.makeMove(*p, to);
-                    std::cout << g.getMoves().back() << std::endl;
+                    Piece *p = f.get();
+                    auto targets = p->getMoveTargets();
+                    if (std::find(targets.begin(), targets.end(), to) == targets.end()) {
+                        std::cerr << to << " is not a legal move for " << *p << std::endl;
+                        std::cerr << "legal moves: " << targets << std::endl;
+                    } else {
+                        g.makeMove(*p, to);
+                        std::cout << g.getMoves().back() << std::endl;
+                    }
                 }
+            } catch (const std::runtime_error& err) {
+                std::cerr << err.what() << std::endl;
             }
         }
     }
@@ -952,7 +1022,7 @@ void random_game(Game& g) {
     Board& b = g.getBoard();
     while(true) {
         std::cout << b << std::endl;
-        auto activePieces = b.getPieces(!b.whitesTurn());
+        auto activePieces = b.getPieces(b.blacksTurn());
         std::vector<Piece*> piecesVec = { std::begin(activePieces), std::end(activePieces) };
         std::random_shuffle(piecesVec.begin(), piecesVec.end());
         Piece *movingPiece = nullptr;
@@ -972,6 +1042,13 @@ void random_game(Game& g) {
         std::cout << "made move: " << g.getMoves().back() << std::endl;
     }
 }
+
+BOOST_CLASS_EXPORT_GUID(Pawn, "Pawn");
+BOOST_CLASS_EXPORT_GUID(Rook, "Rook");
+BOOST_CLASS_EXPORT_GUID(Queen, "Queen");
+BOOST_CLASS_EXPORT_GUID(King, "King");
+BOOST_CLASS_EXPORT_GUID(Bishop, "Bishop");
+BOOST_CLASS_EXPORT_GUID(Knight, "Knight");
 
 enum Mode { AUTO, TEST, RANDOM, INTERACTIVE };
 
