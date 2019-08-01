@@ -131,6 +131,7 @@ public:
      return {};
    }
    std::vector<Point> getMoveTargets() const;
+   virtual bool isMoveTarget(Point origPos, Point target) const;
    virtual float value() const = 0;
    virtual ~Piece() {
    }
@@ -318,6 +319,7 @@ public:
     float value() const {
         return 1000.0;
     }
+    bool isMoveTarget(Point origPos, Point target) const; 
     template <typename Archive>
     void serialize(Archive &ar, const unsigned int version) {
             ar & boost::serialization::base_object<Piece>(*this);
@@ -724,10 +726,10 @@ std::ostream& operator<< (std::ostream& out, const Move& m) {
         cap = "X";
     }
     if (m.castling) {
-        if (m.from.y < m.to.y) {
-            out << "0-0-0";
-        } else {
+        if (m.from.x < m.to.x) {
             out << "0-0";
+        } else {
+            out << "0-0-0";
         }
     } else {
         out << m.piece->getSym() << m.from << cap << m.to;
@@ -881,41 +883,49 @@ bool Board::hasThreats(Point point, bool black) const {
 }
 
 std::vector<Point> Piece::getMoveTargets() const {
-     Piece* that = const_cast<Piece*>(this);
-     Game *game = that->m_field->getBoard()->getGame();
-     Board& b = game->getBoard();   
      std::vector<Point> moves;
-     if (that->isBlack() != game->getBoard().blacksTurn()) {
+     if (isBlack() != m_field->getBoard()->blacksTurn()) {
         return moves;
      }
      std::vector<Point> targets = getTargets();
      Point origPos = m_field->getPos();
      for (Point target: getTargets()) {
-        bool inCheck = false;
-        // check castling legality (TODO move to King?)
-        if (isKing() && abs(target.x-origPos.x)>1) {
-            Point adjPos((origPos.x+target.x)/2, origPos.y);
-            if (b.hasThreats(origPos, isBlack()) || b.hasThreats(adjPos, isBlack())) {
-                inCheck = true;
-             }
-        }
-        // check if check
-        game->makeMove(*that, target);
-        Point kingPos = b.getKingPos(isBlack()); 
-        if (b.hasThreats(kingPos, isBlack())) {
-            inCheck = true;
-        }
-        if (inCheck) {
-            std::cout << *this << " doesn't work because " << kingPos << " is in check"  << std::endl;
-        }  
-        game->retractMove();
-        if (!inCheck) {
+        if (isMoveTarget(origPos, target)) {
             moves.push_back(target);
         }
      }
      return moves;
 }
 
+bool Piece::isMoveTarget(Point origPos, Point target) const {
+    Game *game = m_field->getBoard()->getGame();
+    Board& b = game->getBoard();   
+    
+    // check if check
+    Piece* that = const_cast<Piece*>(this);
+    game->makeMove(*that, target);
+    Point kingPos = b.getKingPos(isBlack()); 
+    bool inCheck = b.hasThreats(kingPos, isBlack());
+    if (inCheck) {
+        std::cout << *this << " doesn't work because " << kingPos << " is in check"  << std::endl;
+    }  
+    game->retractMove();
+    return !inCheck;
+}
+
+bool King::isMoveTarget(Point origPos, Point target) const {
+    Board *b = m_field->getBoard(); 
+    // check castling legality 
+    if (abs(target.x-origPos.x)>1) {
+        Point adjPos((origPos.x+target.x)/2, origPos.y);
+        if (b->hasThreats(origPos, isBlack()) || b->hasThreats(adjPos, isBlack())) {
+            std::cout << "castling to " << target << " doesn't work because of king threats" << std::endl;
+            return false;
+         }
+    }
+    return Piece::isMoveTarget(origPos, target);
+}
+    
 void auto_game(Game& g) {
     while(true) {
         std::cout << g.getBoard() << std::endl;
