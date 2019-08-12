@@ -130,33 +130,45 @@ void test()
     // wrap up the instances into containers, the values will be copied
     S sf(f);
     S sg(g);
-    
+    S sf2(f);
+
     // first and third element of the vector point to the same instance of F
     std::vector<S> v;
-    v.reserve(4);
+    v.reserve(5);
     v.push_back(sf);
     v.push_back(sg);
     v.push_back(sf);
+
     // deep copy 
     v.push_back(*sf.clone());
+    v.push_back(sf2);
  
-    // will modify the first and third element of the vector, but not the deep copy
-    sf.m_f->m_base++;
+    // will modify the first and third element of the vector, but not the deep copies
+    sf.m_f->m_base+=3;
+    
+    // will modify only the second deep copy
+    v[4].m_f->m_base++;
+
     std::cout << v << std::endl;
 
-    // alternatively, just store references in wrapper objects.
+    // alternatively, just store references in wrapper objects. The values will not be copied
     SC scf(f);
     SC scg(g);
+    SC scf2(f);
+
     // also store three elements. They will reference the objects on the stack directly
     std::vector<SC> vc;
-    vc.reserve(4);
+    vc.reserve(5);
     vc.push_back(scf);
     vc.push_back(scg);
     vc.push_back(scf);
     vc.push_back(*scf.clone());
-    scf.m_f.m_base+=2; // modifies f, but won't affect the cloned (fourth) element
+    vc.push_back(scf2);
+    scf.m_f.m_base+=3; // modifies f, but won't affect the cloned (fourth) element
+    vc[4].m_f.m_base++;
     std::cout << vc << std::endl;
     std::cout << sizeof(SC) << ", " << sizeof(F&) << ", " << sizeof(G&) << std::endl;
+ 
     // SC will just contain a pointer to C
     void *ptr;
     memcpy(&ptr, &scf, sizeof(ptr));
