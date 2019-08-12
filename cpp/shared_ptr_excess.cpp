@@ -16,14 +16,15 @@ int m_id;
         nof_objs++;
     }
     F(const F& f) {
-        std::cout << "copy constructing F(" << f.m_id << ")\n";
-        m_id = f.m_id;
+        s_id++;
+        m_id = s_id;
+        std::cout << "copy constructing F(" << m_id << ") from " << f.m_id << "\n";
         m_base = f.m_base;
         nof_objs++;
     }
     int m_base = 1;
     virtual std::ostream& format(std::ostream& str) const {
-        str << m_base;
+        str << m_id << ":" << m_base;
         return str;
     }
     virtual std::string whatami() const {
@@ -51,8 +52,9 @@ struct G : F {
         nof_objs++;
     }
     G(const G& g) {
-        std::cout << "copy constructing G(" << g.m_id << ")\n";
-        m_id = g.m_id;
+        s_id++;
+        m_id = s_id;
+        std::cout << "copy constructing G(" << m_id << ") from " << g.m_id << "\n";
         m_base = g.m_base;
         m_ext = g.m_ext;
         memcpy(m_data, g.m_data, 100);
@@ -80,8 +82,10 @@ std::ostream& operator<<(std::ostream& str, const F& f) {
 
 struct S {
     std::shared_ptr<F> m_f;
+    // deep copy semantics on construction
     S(const F& f) : m_f(f.clone()) {
     }
+    // explicit deep copy
     std::shared_ptr<S> clone() {
         return std::make_shared<S>(*m_f->clone());
     }
@@ -89,8 +93,10 @@ struct S {
 
 struct SC {
     F& m_f;
+    // shallow copy semantics
     SC(F& f) : m_f(f) {
     }
+    // explicit deep copy
     std::shared_ptr<SC> clone() {
         return std::make_shared<SC>(*(m_f.clone()));
     }
@@ -116,14 +122,14 @@ std::ostream& operator<<(std::ostream& str, const std::vector<C>& v) {
 
 void test()
 {
-    // instances of base and derived classes on the stack
+    std::cout << "instances of base and derived classes on the stack\n";
     F f;
     G g;
     
-    // make_shared takes the actual pointer type to construct the object
+    std::cout << "make_shared takes the actual pointer type to construct the object\n";
     std::shared_ptr<F> pg = std::make_shared<G>(g);
     std::cout << "g is a " << pg->whatami() << std::endl;
-    // operator<< will invoke G::put()
+    std::cout << "operator<< will invoke G::format()\n";
     std::cout << *pg << std::endl;
     std::cout << f << ", " << g << std::endl;
     
@@ -151,12 +157,12 @@ void test()
 
     std::cout << v << std::endl;
 
-    // alternatively, just store references in wrapper objects. The values will not be copied
+    std::cout << "alternatively, just store references in wrapper objects. The values will not be copied\n";
     SC scf(f);
     SC scg(g);
     SC scf2(f);
 
-    // also store three elements. They will reference the objects on the stack directly
+    // also store the same elements. Unless deep copied, they will reference the objects on the stack directly
     std::vector<SC> vc;
     vc.reserve(5);
     vc.push_back(scf);
@@ -166,6 +172,7 @@ void test()
     vc.push_back(scf2);
     scf.m_f.m_base+=3; // modifies f, but won't affect the cloned (fourth) element
     vc[4].m_f.m_base++;
+
     std::cout << vc << std::endl;
     std::cout << sizeof(SC) << ", " << sizeof(F&) << ", " << sizeof(G&) << std::endl;
  
