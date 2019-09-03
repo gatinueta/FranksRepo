@@ -60,7 +60,7 @@ struct Point {
         y += p.y;
         return *this;
     }
-    bool operator==(const Point& p) {
+    bool operator==(const Point& p) const {
         return x == p.x && y == p.y;
     }
     bool isOnBoard() const {
@@ -141,14 +141,16 @@ public:
    }
 };
 
+std::ostream& operator<<(std::ostream &strm, const Piece &p);
+
 class Pawn : public Piece {
-    Piece *m_promoted;
+    std::unique_ptr<Piece> m_promoted;
 public:
-    Pawn() : m_promoted(nullptr) {
+    Pawn() : m_promoted() {
         std::cout << "creating pawn" << std::endl;
         
     }
-    const char getSym() const { 
+    const char getSym() const override { 
         if (m_promoted) {
             return m_promoted->getSym();
         } else {
@@ -158,15 +160,15 @@ public:
     ~Pawn() {
         std::cout << "destroying pawn" << std::endl;
         if (m_promoted) {
-            delete m_promoted;
+            m_promoted.reset();
         }
     }
-    bool isPawn() const {
+    bool isPawn() const override {
         return m_promoted == nullptr;
     }
-    std::vector<Point> getTargets() const;
+    std::vector<Point> getTargets() const override;
     
-    void setField(Field* f) {
+    void setField(Field* f) override {
         Piece::setField(f);
         if (m_promoted) {
             m_promoted->setField(f);
@@ -174,30 +176,31 @@ public:
     }
 
     template<typename T> void promote() {
-        if (m_promoted != nullptr) {
+        if (m_promoted) {
             std::ostringstream strstream;
-            strstream << "already promoted to " << m_promoted;
+            strstream << "already promoted to " << *m_promoted;
             
             throw std::runtime_error(strstream.str());
         }
-        m_promoted = new T();
+        m_promoted = std::make_unique<T>();
         m_promoted->setBlack(m_black);
         m_promoted->setField(m_field);
     }
     void unpromote() {
-        delete m_promoted;
-        m_promoted = nullptr;
+        m_promoted.reset();
     }
-    float value() const {
+    float value() const override {
         if (m_promoted) {
             return m_promoted->value();
         } else {
             return 1.0;
         }
     }
+
     template <typename Archive>
     void serialize(Archive &ar, const unsigned int version) {
-            ar & boost::serialization::base_object<Piece>(*this);
+        // TODO m_promoted 
+        ar & boost::serialization::base_object<Piece>(*this);
     }
 
 };
@@ -205,14 +208,14 @@ public:
 class Knight : public Piece {
     static const std::vector<Point> M_INCS;
 public:
-    const char getSym() const {
+    const char getSym() const override {
         return 'N';
     }
-    const std::vector<Point> getIncs() const {
+    const std::vector<Point> getIncs() const override {
         return M_INCS;
     }
-    std::vector<Point> getTargets() const;
-    float value() const {
+    std::vector<Point> getTargets() const override;
+    float value() const override {
         return 3.5;
     }
     template <typename Archive>
@@ -231,14 +234,14 @@ const std::vector<Point> Knight::M_INCS = {
 class Rook : public Piece {
     const static std::vector<Point> M_INCS;
 public:
-    const char getSym() const {
+    const char getSym() const override {
         return 'R';
     }
-    std::vector<Point> getTargets() const;
-    const std::vector<Point> getIncs() const {
+    std::vector<Point> getTargets() const override;
+    const std::vector<Point> getIncs() const override {
         return M_INCS;
     }
-    float value() const {
+    float value() const override {
         return 5.0;
     }
     template <typename Archive>
@@ -250,14 +253,14 @@ public:
 class Queen : public Piece {
     const static std::vector<Point> M_INCS;
 public:
-    const char getSym() const {
+    const char getSym() const override {
         return 'Q';
     }
-    std::vector<Point> getTargets() const;
-    const std::vector<Point> getIncs() const {
+    std::vector<Point> getTargets() const override;
+    const std::vector<Point> getIncs() const override {
         return M_INCS;
     }
-    float value() const {
+    float value() const override {
         return 9.0;
     }
     template <typename Archive>
@@ -269,14 +272,14 @@ public:
 class Bishop : public Piece {
     const static std::vector<Point> M_INCS;
 public: 
-    const char getSym() const {
+    const char getSym() const override {
         return 'B';
     }
-    std::vector<Point> getTargets() const;
-    const std::vector<Point> getIncs() const {
+    std::vector<Point> getTargets() const override;
+    const std::vector<Point> getIncs() const override {
         return M_INCS;
     }
-    float value() const {
+    float value() const override {
         return 3.5;
     }
     template <typename Archive>
@@ -306,20 +309,20 @@ const std::vector<Point> Queen::M_INCS = {
 class King : public Piece {
     const static std::vector<Point> M_INCS;
 public:
-    const char getSym() const {
+    const char getSym() const override {
         return 'K';
     }
-    bool isKing() const {
+    bool isKing() const override {
         return true;
     }
-    const std::vector<Point> getIncs() const {
+    const std::vector<Point> getIncs() const override {
         return M_INCS;
     }
-    std::vector<Point> getTargets() const;
-    float value() const {
+    std::vector<Point> getTargets() const override;
+    float value() const override {
         return 1000.0;
     }
-    bool isMoveTarget(Point origPos, Point target) const; 
+    bool isMoveTarget(Point origPos, Point target) const override; 
     template <typename Archive>
     void serialize(Archive &ar, const unsigned int version) {
             ar & boost::serialization::base_object<Piece>(*this);
@@ -649,14 +652,6 @@ std::ostream& operator<<(std::ostream &strm, const Board &b) {
 }
 
 
-std::ostream& operator<<(std::ostream &strm, const Piece &p) {
-    if (p.getField()) {
-        strm << p.sym() << p.getField()->getPos();
-    } else {
-        strm << p.sym() << "(OFFBOARD)";
-    }
-    return strm;
-}
 
 typedef std::shared_ptr<Piece> P_Piece;
 
@@ -738,6 +733,16 @@ std::ostream& operator<< (std::ostream& out, const Move& m) {
         }
     }
     return out;
+}
+
+std::ostream& operator<<(std::ostream &strm, const Piece &p)
+{
+    if (p.getField()) {
+        strm << p.sym() << p.getField()->getPos();
+    } else {
+        strm << p.sym() << "(OFFBOARD)";
+    }
+    return strm;
 }
 
 class Game {

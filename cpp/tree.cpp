@@ -66,7 +66,7 @@ int main() {
     t.insert("hello");
     t.insert("10");
     t.insert("0");
-    t.visit([](Node& n) { n.m_data += "1"; });
+    t.visit([](Node& n) { n.m_data += "(1)"; });
     t.visit([](const Node& n) { std::cout << n.data() << std::endl; });
 }
 
