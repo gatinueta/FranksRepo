@@ -6,44 +6,45 @@ static void debug(std::string msg) {
     std::cerr << msg << std::endl;
 }
 
-struct M {
+template<typename Ty>
+struct Mem {
     int m_len;
-    std::unique_ptr<char[]> m_p;
-    M(int len) : 
+    std::unique_ptr<Ty[]> m_p;
+    Mem(int len) : 
         m_len(len), 
-        m_p(std::make_unique<char[]>(len))
+        m_p(std::make_unique<Ty[]>(len))
     {
-        debug("M(int) (create)");
+        debug("Mem(int) (create)");
     }
-    M(const M& other) : 
+    Mem(const Mem<Ty>& other) : 
         m_len(other.m_len), 
-        m_p(std::make_unique<char[]>(m_len)) 
+        m_p(std::make_unique<Ty[]>(m_len)) 
     {
-        debug("M(M&) (copy)");
+        debug("Mem(Mem&) (copy)");
         std::copy(other.m_p.get(), other.m_p.get() + m_len, m_p.get());
     }
-    ~M() {
+    ~Mem() {
         // noop, unique_ptr auto-destroyed
     }
-    M& operator=(const M& other) {
-        debug("M =M& (copy assign)");
+    Mem& operator=(const Mem<Ty>& other) {
+        debug("Mem =Mem& (copy assign)");
         if (&other != this) {
             m_len = other.m_len;
-            m_p = std::make_unique<char[]>(m_len);
+            m_p = std::make_unique<Ty[]>(m_len);
             std::copy(other.m_p.get(), other.m_p.get() + m_len, m_p.get());
         }
         return *this;
     }
-    M(M&& other) :
+    Mem(Mem<Ty>&& other) :
         m_len(other.m_len),
         m_p(std::move(other.m_p)) 
       {
-        debug("M(M&&) (move)");
+        debug("Mem(Mem&&) (move)");
         other.m_len = 0;
         other.m_p.reset();
       }
-    M& operator=(M&& other) {
-        debug("M =M&& (move assign)");
+    Mem& operator=(Mem<Ty>&& other) {
+        debug("Mem =Mem&& (move assign)");
         if (&other != this) {
             m_len = other.m_len;
             m_p = std::move(other.m_p);
@@ -51,15 +52,18 @@ struct M {
         }
         return *this;
     }
-    void set(int i, char v) {
+    void set(int i, const Ty& v) {
         m_p.get()[i] = v;
     }
 
 };
 
-std::ostream& operator<<(std::ostream& str, const M& m) {
-    const char *ca = m.m_p.get();
-    str << (ca == nullptr ? "nullptr" : ca);
+template<typename T>
+std::ostream& operator<<(std::ostream& str, const Mem<T>& m) {
+    const T *ca = m.m_p.get();
+    for (int i=0; i<m.m_len; i++) {
+        str << ca[i];
+    }
     return str;
 }
 
@@ -71,39 +75,56 @@ std::ostream& operator<<(std::ostream& str, const std::vector<T>& v) {
     return str;
 }
 
-M getM() {
-    M m(100);
-    m.set(0, 'e');
-    m.set(1, 'x');
+Mem<std::string> getStringM(const std::string& third) {
+    Mem<std::string> m(4);
+    m.set(0, "one");
+    m.set(1, "two");
+    std::cout << "intermediate stringM: " << m << std::endl;
+    m.set(2, third);
 
     return m;
 }
 
-int main() {
+Mem<char> getCharM() {
+    Mem<char> m(4);
+    m.set(0, 'e');
+    m.set(1, 'x');
+    return m;
+}
+
+auto getStringVec() {
     std::vector<std::string> v = { "eins", "zwei", "drei", "vier" };
+    return v;
+}
+
+int main(int argc, char **argv) {
+    std::vector<std::string> v = getStringVec();
     std::vector<std::string> v2 = std::move(v);
     v.push_back("five");
     std::cout << v << std::endl;
     std::cout << v2 << std::endl;
 
     debug("make one");
-    M m(10);
+    Mem<char> m(10);
     m.set(0, 'a');
     m.set(1, 'b');
     std::cout << m << std::endl;
     debug("copy it");
-    M m2(m);
+    Mem<char> m2(m);
     m.set(1, '\0');
     std::cout << m << m2 << std::endl;
 
     debug("moving second to third");
-    M m3(std::move(m2));
+    Mem<char> m3(std::move(m2));
     debug("assigning second by value from function");
-    m2 = getM();
+    m2 = getCharM();
     debug("assigning first a copy of the third");
     m = m3;
     debug("output everything");
     std::cout << m << m2 << m3 << std::endl;
 
+    debug("get and output a string Mem");
+    Mem<std::string> stringM = getStringM(argv[0]);
+    std::cout << stringM << std::endl;
 }
 

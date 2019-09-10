@@ -87,7 +87,7 @@ struct S {
     }
     // explicit deep copy
     std::shared_ptr<S> clone() {
-        return std::make_shared<S>(*m_f->clone());
+        return std::make_shared<S>(*m_f);
     }
 };
 
