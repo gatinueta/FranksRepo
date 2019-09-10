@@ -13,7 +13,16 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/list.hpp>
+#include <boost/serialization/unique_ptr.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
+//#define USEDEBUG
+
+#ifdef USEDEBUG
+#define Debug(x) std::cout << x << std::endl;
+#else
+#define Debug(x) 
+#endif 
 
 // Forward declaration of class boost::serialization::access
 namespace boost {
@@ -147,8 +156,7 @@ class Pawn : public Piece {
     std::unique_ptr<Piece> m_promoted;
 public:
     Pawn() : m_promoted() {
-        std::cout << "creating pawn" << std::endl;
-        
+        Debug("creating pawn");
     }
     const char getSym() const override { 
         if (m_promoted) {
@@ -158,7 +166,7 @@ public:
         }
     }
     ~Pawn() {
-        std::cout << "destroying pawn" << std::endl;
+        Debug ("destroying pawn");
         if (m_promoted) {
             m_promoted.reset();
         }
@@ -199,8 +207,8 @@ public:
 
     template <typename Archive>
     void serialize(Archive &ar, const unsigned int version) {
-        // TODO m_promoted 
         ar & boost::serialization::base_object<Piece>(*this);
+        ar & m_promoted;
     }
 
 };
@@ -412,6 +420,7 @@ public:
      * by pieces by opponent of 'black'
      */
     bool hasThreats(Point point, bool black) const;
+    bool inCheck(bool black) const;
     std::list<Piece*>& getPieces(bool black) {
         if (black) {
             return m_blackPieces;
@@ -704,8 +713,8 @@ struct Move {
     Point to;
     Piece *piece;
     Piece *capturedPiece;
-    bool promotion;
-    bool castling;
+    bool promotion = false;
+    bool castling = false;
     // Allow serialization to access non-public data members.
     friend class boost::serialization::access;
 
@@ -717,6 +726,10 @@ struct Move {
 
 std::ostream& operator<< (std::ostream& out, const Move& m) {
     std::string cap;
+    if (m.piece == nullptr) {
+        out << "(none)";
+        return out;
+    } 
     if (m.capturedPiece != nullptr) {
         cap = "X";
     }
@@ -727,9 +740,10 @@ std::ostream& operator<< (std::ostream& out, const Move& m) {
             out << "0-0-0";
         }
     } else {
-        out << m.piece->getSym() << m.from << cap << m.to;
         if (m.promotion) {
-            out << "=" << *m.piece;
+           out << 'P' << m.from << cap << m.to << "=" << *m.piece;
+        } else {
+            out << m.piece->getSym() << m.from << cap << m.to;
         }
     }
     return out;
@@ -744,10 +758,22 @@ std::ostream& operator<<(std::ostream &strm, const Piece &p)
     }
     return strm;
 }
+struct EvalMove : public Move {
+public:
+    EvalMove(const Move& move) : Move(move), eval(0.0) {
+    }
+    EvalMove() : Move(), eval(0.0) {
+    }
+    float eval;
+};
+
+std::ostream& operator<< (std::ostream& out, const EvalMove& evalMove) {
+    out << static_cast<Move>(evalMove) << ", eval: " << evalMove.eval;
+    return out;
+}
 
 class Game {
     Board m_b;
-    //TODO: unneeded and not serialized
     std::vector<P_Piece> m_ptr_pieces;
     std::vector<Move> m_moves;
 public:
@@ -779,7 +805,7 @@ public:
     }
     const Move *makeMove(Piece& p, Point to) {
         if (p.isBlack() != m_b.blacksTurn()) {
-           std::cout << "error: moving " << p << ", black's turn: " << m_b.blacksTurn() << std::endl;
+           std::cerr << "error: moving " << p << ", black's turn: " << m_b.blacksTurn() << std::endl;
            return nullptr;
         }
         Move move;
@@ -847,33 +873,63 @@ public:
         return true;
     }
 
-    Move getBestMove() {
-        float bestEval = -1000;
-        Move bestMove;
+    bool compareMoves(float newMove, float r, bool max) {
+        if (max) {
+            return newMove > r;
+        } else {
+            return newMove < r;
+        }
+    }
+
+    EvalMove getBestMove(int depth, bool print = true) {
+        static const float MAXEVAL = 1000.0;
         bool blacksTurn = m_b.blacksTurn();
+        EvalMove bestMove;
+        bestMove.eval = blacksTurn ? MAXEVAL : -MAXEVAL;
         auto activePieces = m_b.getPieces(blacksTurn);
         for (Piece *p: activePieces) {
             for (Point target: p->getMoveTargets()) {
                 const Move* move = makeMove(*p, target);
-                float evaluation = m_b.eval();
-                std::cout << "eval of " << *move << ": " << evaluation << std::endl;
-                if (blacksTurn) {
-                    evaluation = -evaluation;
+                if (print) std::cout << "made move " << *move << std::endl;
+                EvalMove evalMove(*move);
+                if (depth > 0) {
+                    EvalMove nextBestMove = getBestMove(depth-1, false);
+                    Debug("next best is " << nextBestMove);
+                    evalMove.eval = nextBestMove.eval;
+                } else {
+                    evalMove.eval = m_b.eval();
                 }
-                if (evaluation > bestEval) {
-                    bestEval = evaluation;
-                    bestMove = *move;
+                if (print) {
+                    std::cout << "depth " << depth << ", checking " << evalMove << std::endl;
+                }
+                if (compareMoves(evalMove.eval, bestMove.eval, !blacksTurn)) {
+                    bestMove = evalMove;
                 }
                 retractMove();
             }
         }
+        if (print) {
+            std::cout << "depth " << depth << ", best move " << bestMove << std::endl;
+        }
+        // no moves found?
+        if (bestMove.piece == nullptr) {
+            Debug("no moves found");
+            if (m_b.inCheck(blacksTurn)) {
+                // checkmate
+            } else {
+                // stalemate
+                bestMove.eval = 0.0;
+            }
+        }
         return bestMove;
+    }
+    EvalMove getBestMove() {
+        return getBestMove(3, true);
     }
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned version) {
-        // C++11 smart pointers not serializable by boost
-        ar & m_b & m_moves;
+        ar & m_b & m_moves & m_ptr_pieces;
     }
 };   
 
@@ -902,6 +958,11 @@ std::vector<Point> Piece::getMoveTargets() const {
      return moves;
 }
 
+bool Board::inCheck(bool black) const {
+    Point kingPos = getKingPos(black);
+    return hasThreats(kingPos, black);
+}
+
 bool Piece::isMoveTarget(Point origPos, Point target) const {
     Game *game = m_field->getBoard()->getGame();
     Board& b = game->getBoard();   
@@ -909,10 +970,9 @@ bool Piece::isMoveTarget(Point origPos, Point target) const {
     // check if check
     Piece* that = const_cast<Piece*>(this);
     game->makeMove(*that, target);
-    Point kingPos = b.getKingPos(isBlack()); 
-    bool inCheck = b.hasThreats(kingPos, isBlack());
+    bool inCheck = b.inCheck(isBlack());
     if (inCheck) {
-        std::cout << *this << " doesn't work because " << kingPos << " is in check"  << std::endl;
+        Debug (*this << " doesn't work because king is in check");
     }  
     game->retractMove();
     return !inCheck;
@@ -924,7 +984,7 @@ bool King::isMoveTarget(Point origPos, Point target) const {
     if (abs(target.x-origPos.x)>1) {
         Point adjPos((origPos.x+target.x)/2, origPos.y);
         if (b->hasThreats(origPos, isBlack()) || b->hasThreats(adjPos, isBlack())) {
-            std::cout << "castling to " << target << " doesn't work because of king threats" << std::endl;
+            Debug("castling to " << target << " doesn't work because of king threats");
             return false;
          }
     }
@@ -965,6 +1025,10 @@ void deserialize(Game& game) {
     ar & game;
 }
 
+bool starts_with(const std::string& s, const std::string prefix) {
+    return s.compare(0, prefix.length(), prefix) == 0;
+}
+
 void interactive_game(Game& g) {
     Board& b = g.getBoard();
     while(true) {
@@ -980,6 +1044,14 @@ void interactive_game(Game& g) {
             b = g.getBoard();
         } else if (movestr == "retract") {
             g.retractMove();
+        } else if (starts_with(movestr, "best")) {
+            if (movestr.length() > 4) {
+                std::cout << g.getBestMove(atoi(movestr.substr(4).c_str()), true) << std::endl;
+            } else {
+                std::cout << g.getBestMove() << std::endl;
+            }
+        } else if (movestr == "quit") {
+            return;
         } else {
             try {
                 str_toupper(movestr);
