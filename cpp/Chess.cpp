@@ -96,9 +96,15 @@ class Piece {
 protected:
    bool m_black;
    Field* m_field;
-   std::vector<Point> getDirectTargets() const;
-   std::vector<Point> getIterTargets() const;
+   std::vector<Point>& getDirectTargets();
+   std::vector<Point>& getIterTargets();
    int m_nofMoves;
+   std::vector<Point> m_targets;
+   std::vector<Point> m_moveTargets;
+   virtual const std::vector<Point>& getIncs() const {
+     // can't be pure virtual because it has to be implemented even if not called
+     throw std::runtime_error("getIncs() not implemented");
+   }
 public:
    Piece() : m_field(nullptr), m_nofMoves(0) {
    }
@@ -134,12 +140,9 @@ public:
    virtual bool isPawn() const {
      return false;
    }
-   virtual std::vector<Point> getTargets() const = 0;
+   virtual const std::vector<Point>& getTargets() = 0;
 
-   virtual const std::vector<Point> getIncs() const {
-     return {};
-   }
-   std::vector<Point> getMoveTargets() const;
+   const std::vector<Point>& getMoveTargets();
    virtual bool isMoveTarget(Point origPos, Point target) const;
    virtual float value() const = 0;
    virtual ~Piece() {
@@ -172,9 +175,9 @@ public:
         }
     }
     bool isPawn() const override {
-        return m_promoted == nullptr;
+        return !m_promoted;
     }
-    std::vector<Point> getTargets() const override;
+    const std::vector<Point>& getTargets() override;
     
     void setField(Field* f) override {
         Piece::setField(f);
@@ -215,14 +218,15 @@ public:
 
 class Knight : public Piece {
     static const std::vector<Point> M_INCS;
+protected:
+    const std::vector<Point>& getIncs() const override {
+        return M_INCS;
+    }
 public:
     const char getSym() const override {
         return 'N';
     }
-    const std::vector<Point> getIncs() const override {
-        return M_INCS;
-    }
-    std::vector<Point> getTargets() const override;
+    const std::vector<Point>& getTargets() override;
     float value() const override {
         return 3.5;
     }
@@ -241,14 +245,15 @@ const std::vector<Point> Knight::M_INCS = {
 
 class Rook : public Piece {
     const static std::vector<Point> M_INCS;
+protected:
+    const std::vector<Point>& getIncs() const override {
+        return M_INCS;
+    }
 public:
     const char getSym() const override {
         return 'R';
     }
-    std::vector<Point> getTargets() const override;
-    const std::vector<Point> getIncs() const override {
-        return M_INCS;
-    }
+    const std::vector<Point>& getTargets() override;
     float value() const override {
         return 5.0;
     }
@@ -260,14 +265,15 @@ public:
 
 class Queen : public Piece {
     const static std::vector<Point> M_INCS;
+protected:
+    const std::vector<Point>& getIncs() const override {
+        return M_INCS;
+    }
 public:
     const char getSym() const override {
         return 'Q';
     }
-    std::vector<Point> getTargets() const override;
-    const std::vector<Point> getIncs() const override {
-        return M_INCS;
-    }
+    const std::vector<Point>& getTargets() override;
     float value() const override {
         return 9.0;
     }
@@ -279,14 +285,15 @@ public:
 
 class Bishop : public Piece {
     const static std::vector<Point> M_INCS;
+protected:
+    const std::vector<Point>& getIncs() const override {
+        return M_INCS;
+    }
 public: 
     const char getSym() const override {
         return 'B';
     }
-    std::vector<Point> getTargets() const override;
-    const std::vector<Point> getIncs() const override {
-        return M_INCS;
-    }
+    const std::vector<Point>& getTargets() override;
     float value() const override {
         return 3.5;
     }
@@ -316,6 +323,10 @@ const std::vector<Point> Queen::M_INCS = {
 
 class King : public Piece {
     const static std::vector<Point> M_INCS;
+protected:
+    const std::vector<Point>& getIncs() const override {
+        return M_INCS;
+    }
 public:
     const char getSym() const override {
         return 'K';
@@ -323,10 +334,7 @@ public:
     bool isKing() const override {
         return true;
     }
-    const std::vector<Point> getIncs() const override {
-        return M_INCS;
-    }
-    std::vector<Point> getTargets() const override;
+    const std::vector<Point>& getTargets() override;
     float value() const override {
         return 1000.0;
     }
@@ -397,6 +405,7 @@ class Board {
     bool m_blacksTurn;
     Point m_bKingPos, m_wKingPos;
     Game *m_game;
+    bool m_inCheck = false;
 public:
     Board() : m_blacksTurn(false) {
         Point p;
@@ -404,11 +413,12 @@ public:
             p.y = y;
             for (int x=0; x<DIM; x++) {
                 p.x = x;
-                Field& f = get(p);
+                Field& f = at(p);
                 f.init(p, this);
             }
         }
     }
+    bool possibleDiscoveryCheck(const Piece& p, Point pos);
     void setGame(Game *game) {
         m_game = game;
     }
@@ -420,7 +430,8 @@ public:
      * by pieces by opponent of 'black'
      */
     bool hasThreats(Point point, bool black) const;
-    bool inCheck(bool black) const;
+    bool inCheck() const;
+    void setInCheck();
     std::list<Piece*>& getPieces(bool black) {
         if (black) {
             return m_blackPieces;
@@ -446,17 +457,17 @@ public:
         }
     }
     
-    Field& get(Point p) {
+    Field& at(Point p) {
         return m_b[p.y + DIM*p.x];
     }
     const Field& at(Point p) const {
         return m_b[p.y + DIM*p.x];
     }
-    Field& get(const std::string& pos) {
-        return get(Point::convert(pos));
+    Field& at(const std::string& pos) {
+        return at(Point::convert(pos));
     }
-    Field& get(const char col, const char row) {
-        return get(Point::convert(col, row));
+    Field& at(const char col, const char row) {
+        return at(Point::convert(col, row));
     }
     bool blacksTurn() const {
         return m_blacksTurn;
@@ -483,7 +494,7 @@ public:
          }
          for (int x=0; x<DIM; x++) {
             for (auto row: { '1', '8' }) {
-                Field& f = get(COLNAMES[x], row);
+                Field& f = at(COLNAMES[x], row);
                 if (f.get() && f.get()->isPawn()) {
                     std::cerr << "pawn on " << f.getPos() << std::endl;
                     return false;
@@ -505,9 +516,10 @@ public:
         }
         return value;
     }
+    bool searchPiece(bool black, Point pos, int incx, int incy) const; 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned version) {
-        ar & m_b & m_whitePieces & m_blackPieces & m_blacksTurn & m_bKingPos & m_wKingPos & m_game;
+        ar & m_b & m_whitePieces & m_blackPieces & m_blacksTurn & m_bKingPos & m_wKingPos & m_game & m_inCheck;
     }
 };
 
@@ -530,22 +542,22 @@ Piece *Field::remove() {
         return old;
 }
     
-std::vector<Point> Piece::getDirectTargets() const {
-    std::vector<Point> targets;
+std::vector<Point>& Piece::getDirectTargets() {
+    m_targets.clear();
     const Board *b = m_field->getBoard();
     for (Point inc: getIncs()) {
         Point target = m_field->getPos() + inc;
         if (target.isOnBoard()) {
             if (b->at(target).isEmpty() || b->at(target).get()->isBlack() != isBlack()) {
-                targets.push_back(target);
+                m_targets.push_back(target);
             }
         }
     }
-    return targets;
+    return m_targets;
 }
 
-std::vector<Point> Piece::getIterTargets() const {
-    std::vector<Point> targets;
+std::vector<Point>& Piece::getIterTargets() {
+    m_targets.clear();
     const Board *b = m_field->getBoard();
     for (Point inc: getIncs()) {
         Point target = m_field->getPos();
@@ -555,20 +567,21 @@ std::vector<Point> Piece::getIterTargets() const {
                 break;
             }
             if ( b->at(target).isEmpty()) {
-                targets.push_back(target);
+                m_targets.push_back(target);
             } else if (b->at(target).get()->isBlack() == isBlack()) {
                 break;
             } else {
-                targets.push_back(target);
+                m_targets.push_back(target);
                 break;
             }
         }
     }
-    return targets;
+    return m_targets;
 }
 
-std::vector<Point> King::getTargets() const {
-    std::vector<Point> kingTargets = getDirectTargets();
+const std::vector<Point>& King::getTargets() {
+    getDirectTargets();
+    // castling. TODO: simplify & readability
     if (m_nofMoves == 0 && m_field->getPos().x == 4) {
         const Board *b = m_field->getBoard();
         int row = m_field->getPos().y;
@@ -578,41 +591,40 @@ std::vector<Point> King::getTargets() const {
             b->at(Point(2, row)).isEmpty() &&
             b->at(Point(3, row)).isEmpty() 
          ) {
-            kingTargets.push_back(Point(2, row));
+            m_targets.push_back(Point(2, row));
          }
          if (!b->at(Point(7, row)).isEmpty() &&
             b->at(Point(7, row)).get()->getNofMoves() == 0 &&
             b->at(Point(6, row)).isEmpty() &&
             b->at(Point(5, row)).isEmpty()
           ) {
-            kingTargets.push_back(Point(6, row));
+            m_targets.push_back(Point(6, row));
           }
-          //TODO check castling legality later...
      }
-     return kingTargets;
+     return m_targets;
 }
 
-std::vector<Point> Knight::getTargets() const {
+const std::vector<Point>& Knight::getTargets() {
     return getDirectTargets();
 }
 
-std::vector<Point> Bishop::getTargets() const {
+const std::vector<Point>& Bishop::getTargets() {
     return getIterTargets();
 }
 
-std::vector<Point> Rook::getTargets() const {
+const std::vector<Point>& Rook::getTargets() {
     return getIterTargets();
 }
 
-std::vector<Point> Queen::getTargets() const {
+const std::vector<Point>& Queen::getTargets()  {
     return getIterTargets();
 }
 
-std::vector<Point> Pawn::getTargets() const {
+const std::vector<Point>& Pawn::getTargets() {
     if (m_promoted) {
         return m_promoted->getTargets();
     } 
-    std::vector<Point> targets;
+    m_targets.clear();
     const Board *b = m_field->getBoard();
     Point pos = m_field->getPos();
     Point straightTarget = pos + (isBlack() ? Point(0, -1) : Point(0, 1));
@@ -621,21 +633,21 @@ std::vector<Point> Pawn::getTargets() const {
     Point capTarget2 = pos + (isBlack() ? Point(-1, -1) : Point(-1, 1));
 
     if (straightTarget.isOnBoard() && b->at(straightTarget).isEmpty()) {
-        targets.push_back(straightTarget);
+        m_targets.push_back(straightTarget);
         if ((isBlack() && pos.y == DIM-2) ||
             (!isBlack() && pos.y == 1)) {
             if (doubleStepTarget.isOnBoard() && b->at(doubleStepTarget).isEmpty()) {
-                targets.push_back(doubleStepTarget);
+                m_targets.push_back(doubleStepTarget);
             }
         }
     }
     for (Point capTarget: { capTarget1, capTarget2 }) {
         if (capTarget.isOnBoard() && !b->at(capTarget).isEmpty() && b->at(capTarget).get()->isBlack() != isBlack()) {
-            targets.push_back(capTarget);
+            m_targets.push_back(capTarget);
         }
         //TODO en passant
     }
-    return targets;
+    return m_targets;
 }
 
 std::ostream& operator<<(std::ostream &strm, const Field &f) {
@@ -668,7 +680,7 @@ template<typename T>
 static std::shared_ptr<T> add(Board& b, const char col, const char row, bool black, std::vector<P_Piece>& ptrs) {
     auto w_piece = std::make_shared<T>();
     w_piece->setBlack(black);
-    b.get(col, row).put(*w_piece);
+    b.at(col, row).put(*w_piece);
     ptrs.push_back(w_piece);
     return w_piece;
 }
@@ -715,12 +727,13 @@ struct Move {
     Piece *capturedPiece;
     bool promotion = false;
     bool castling = false;
+    bool causesCheck = false;
     // Allow serialization to access non-public data members.
     friend class boost::serialization::access;
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned version) {
-        ar & from & to & piece & capturedPiece & promotion & castling;
+        ar & from & to & piece & capturedPiece & promotion & castling & causesCheck;
     }
 };
 
@@ -745,6 +758,9 @@ std::ostream& operator<< (std::ostream& out, const Move& m) {
         } else {
             out << m.piece->getSym() << m.from << cap << m.to;
         }
+    }
+    if (m.causesCheck) {
+        out << '+';
     }
     return out;
 }
@@ -813,8 +829,8 @@ public:
         move.to = to;
         move.piece = &p;
         
-        m_b.get(move.from).remove();
-        move.capturedPiece = m_b.get(to).put(p);
+        m_b.at(move.from).remove();
+        move.capturedPiece = m_b.at(to).put(p);
         if (p.isPawn() && (to.y == 0 || to.y == DIM-1)) {
            dynamic_cast<Pawn&>(p).promote<Queen>();
            move.promotion = true;
@@ -825,15 +841,16 @@ public:
             move.castling = true;
             Point rookTarget = Point((move.to.x+move.from.x)/2, move.from.y);
             Point rookPos = Point(move.to.x > move.from.x ? 7 : 0, move.from.y);
-            Piece* rook = m_b.get(rookPos).remove();
-            m_b.get(rookTarget).put(*rook);
+            Piece* rook = m_b.at(rookPos).remove();
+            m_b.at(rookTarget).put(*rook);
         } else {
             move.castling = false;
         }
-
+        m_b.setBlacksTurn(!m_b.blacksTurn());
+        m_b.setInCheck();
+        move.causesCheck = m_b.inCheck();
         m_moves.push_back(move);
         p.incNofMoves(1);
-        m_b.setBlacksTurn(!m_b.blacksTurn());
         if (p.isKing()) {
             m_b.setKingPos(p.isBlack(), to);
         }
@@ -845,7 +862,7 @@ public:
             return false;
         }
         Move& move = m_moves.back();
-        Piece* p = m_b.get(move.to).remove();
+        Piece* p = m_b.at(move.to).remove();
         if (p != move.piece) {
             std::cerr << "can't find piece of last move" << std::endl;
             return false;
@@ -854,19 +871,20 @@ public:
             dynamic_cast<Pawn*>(p)->unpromote();
         }
         m_moves.pop_back();
-        m_b.get(move.from).put(*p);
+        m_b.at(move.from).put(*p);
         if (move.castling) {
             Point rookTarget = Point((move.to.x+move.from.x)/2, move.from.y);
             Point rookPos = Point(move.to.x > move.from.x ? 7 : 0, move.from.y);
-            Piece *rook = m_b.get(rookTarget).remove();
-            m_b.get(rookPos).put(*rook);
+            Piece *rook = m_b.at(rookTarget).remove();
+            m_b.at(rookPos).put(*rook);
         }
         p->incNofMoves(-1);
 
         if (move.capturedPiece != nullptr) {
-            m_b.get(move.to).put(*move.capturedPiece);
+            m_b.at(move.to).put(*move.capturedPiece);
         }
         m_b.setBlacksTurn(!m_b.blacksTurn());
+        m_b.setInCheck();
          if (p->isKing()) {
             m_b.setKingPos(p->isBlack(), move.from);
         }
@@ -888,9 +906,9 @@ public:
         bestMove.eval = blacksTurn ? MAXEVAL : -MAXEVAL;
         auto activePieces = m_b.getPieces(blacksTurn);
         for (Piece *p: activePieces) {
-            for (Point target: p->getMoveTargets()) {
+            std::vector<Point> moveTargets(p->getMoveTargets());
+            for (Point target: moveTargets) {
                 const Move* move = makeMove(*p, target);
-                if (print) std::cout << "made move " << *move << std::endl;
                 EvalMove evalMove(*move);
                 if (depth > 0) {
                     EvalMove nextBestMove = getBestMove(depth-1, false);
@@ -914,7 +932,7 @@ public:
         // no moves found?
         if (bestMove.piece == nullptr) {
             Debug("no moves found");
-            if (m_b.inCheck(blacksTurn)) {
+            if (m_b.inCheck()) {
                 // checkmate
             } else {
                 // stalemate
@@ -935,7 +953,7 @@ public:
 
 bool Board::hasThreats(Point point, bool black) const {
    for (Piece* p: getPieces(!black)) {
-        auto oppTargets = p->getTargets();
+        const std::vector<Point>& oppTargets = p->getTargets();
         if (std::find(oppTargets.begin(), oppTargets.end(), point) != oppTargets.end()) {
             return true;
         }
@@ -943,39 +961,87 @@ bool Board::hasThreats(Point point, bool black) const {
    return false;
 }
 
-std::vector<Point> Piece::getMoveTargets() const {
-     std::vector<Point> moves;
+const std::vector<Point>& Piece::getMoveTargets() {
+     m_moveTargets.clear();
      if (isBlack() != m_field->getBoard()->blacksTurn()) {
-        return moves;
+        return m_moveTargets;
      }
-     std::vector<Point> targets = getTargets();
+     std::vector<Point> targets(getTargets()); // TODO doesn't make sense, optimize
      Point origPos = m_field->getPos();
-     for (Point target: getTargets()) {
+     for (Point target: targets) {
         if (isMoveTarget(origPos, target)) {
-            moves.push_back(target);
+            m_moveTargets.push_back(target);
         }
      }
-     return moves;
+     return m_moveTargets;
 }
 
-bool Board::inCheck(bool black) const {
-    Point kingPos = getKingPos(black);
-    return hasThreats(kingPos, black);
+bool Board::inCheck() const {
+    return m_inCheck;
+}
+
+void Board::setInCheck() {
+    Point kingPos = getKingPos(blacksTurn());
+    m_inCheck = hasThreats(kingPos, blacksTurn());
+}
+
+static int sgn(int v) {
+    return v > 0 ? 1 : -1;
+}
+
+bool Board::searchPiece(bool black, Point pos, int incx, int incy) const {
+    Point inc(incx, incy);
+
+    while(true) {
+        pos += inc;
+        if (!pos.isOnBoard()) {
+            return false;
+        }
+        if (!at(pos).isEmpty()) {
+            return at(pos).get()->isBlack() == black;
+        }
+    }
+}
+
+bool Board::possibleDiscoveryCheck(const Piece& p, Point pos) {
+    Point kingPos = getKingPos(p.isBlack());
+    bool onRow = (pos.x == kingPos.x);
+    bool onRank = (pos.y == kingPos.y);
+    bool onUpDiag = (pos.x - kingPos.x == pos.y - kingPos.y);
+    bool onDownDiag = (pos.x - kingPos.x == kingPos.y - pos.y);
+    if (onRow) {
+        return searchPiece(!p.isBlack(), pos, sgn(pos.x - kingPos.x), 0);
+    }
+    if (onRank) {
+        return searchPiece(!p.isBlack(), pos, 0, sgn(pos.y - kingPos.y));
+    }
+    if (onUpDiag) {
+        return searchPiece(!p.isBlack(), pos, sgn(pos.x - kingPos.x), sgn(pos.x - kingPos.x));
+    }
+    if (onDownDiag) {
+        return searchPiece(!p.isBlack(), pos, sgn(pos.x - kingPos.x), sgn(kingPos.x - pos.x));
+    }
+    return false;
+
 }
 
 bool Piece::isMoveTarget(Point origPos, Point target) const {
+    // TODO make this faster?
     Game *game = m_field->getBoard()->getGame();
     Board& b = game->getBoard();   
-    
-    // check if check
-    Piece* that = const_cast<Piece*>(this);
-    game->makeMove(*that, target);
-    bool inCheck = b.inCheck(isBlack());
-    if (inCheck) {
-        Debug (*this << " doesn't work because king is in check");
-    }  
-    game->retractMove();
-    return !inCheck;
+    if (isKing() || b.inCheck() || b.possibleDiscoveryCheck(*this, origPos)) {
+        // check if check after move
+        Piece* that = const_cast<Piece*>(this);
+        game->makeMove(*that, target);
+        bool inCheck = b.hasThreats(b.getKingPos(isBlack()), isBlack());
+        if (inCheck) {
+            Debug (*this << " doesn't work because king is in check");
+        }  
+        game->retractMove();
+        return !inCheck;
+    } else {
+        return true;
+    }
 }
 
 bool King::isMoveTarget(Point origPos, Point target) const {
@@ -1058,12 +1124,12 @@ void interactive_game(Game& g) {
                 Point from = Point::convert(movestr.substr(0, 2));
                 Point to = Point::convert(movestr.substr(2, 2));
                 
-                Field& f = b.get(from);
+                Field& f = b.at(from);
                 if (f.isEmpty()) {
                     std::cerr << from << " is empty" << std::endl;
                 } else {
                     Piece *p = f.get();
-                    auto targets = p->getMoveTargets();
+                    const std::vector<Point>& targets = p->getMoveTargets();
                     if (std::find(targets.begin(), targets.end(), to) == targets.end()) {
                         std::cerr << to << " is not a legal move for " << *p << std::endl;
                         std::cerr << "legal moves: " << targets << std::endl;
@@ -1084,20 +1150,20 @@ void test_game(Game& g) {
 
     // test code
     std::cout << "black king pos is " << b.getKingPos(true) << std::endl;
-    const Piece* wKing = b.get(b.getKingPos(false)).get();
+    Piece* wKing = b.at(b.getKingPos(false)).get();
     auto targets = wKing->getTargets();
     std::cout << "white king targets: " << targets << std::endl;
-    const Piece* bKnight = b.get("B8").get();
+    Piece* bKnight = b.at("B8").get();
     targets = bKnight->getTargets();
     std::cout << "black knight targets: " << targets << std::endl;
     Bishop bi;
-    b.get("D4").put(bi);
+    b.at("D4").put(bi);
     std::cout << b << std::endl;
     std::cout << "white bishop moves: " << bi.getMoveTargets() << std::endl;
-    b.get("D4").remove();
-    targets = b.get("D7").get()->getTargets();
+    b.at("D4").remove();
+    targets = b.at("D7").get()->getTargets();
     std::cout << "D7 pawn targets: " << targets << std::endl; 
-    Piece *pawn = b.get("D2").get();
+    Piece *pawn = b.at("D2").get();
     if (!g.makeMove(*pawn, pawn->getTargets()[0])) {
         std::cout << "can't make the move to " << targets[0] << std::endl;
     }
@@ -1115,7 +1181,7 @@ void random_game(Game& g) {
         Piece *movingPiece = nullptr;
         Point target;
         for (Piece *p: activePieces) {
-            std::vector<Point> moves = p->getMoveTargets();
+            std::vector<Point> moves(p->getMoveTargets());
             std::random_shuffle(moves.begin(), moves.end());
             if (moves.size() > 0) {
                 movingPiece = p;
