@@ -1,0 +1,12 @@
+<project>
+  <parent>
+    <groupId>ch.frank.myapp</groupId>
+    <artifactId>my-app</artifactId>
+    <version>1</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>ch.frank.myapp</groupId>
+  <artifactId>SimpleHttpServer</artifactId>
+  <version>1</version>
+</project>

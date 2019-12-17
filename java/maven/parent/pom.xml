@@ -6,5 +6,6 @@
   <packaging>pom</packaging>
   <modules>
     <module>../hello</module>
+    <module>../HttpServer</module>
   </modules>
 </project>
