@@ -1,3 +1,7 @@
+# use 
+# python -m pdb perm.py
+# for interactive play
+
 class Perm: 
 	def __init__(self, n, lol):
 		self.n = n
@@ -44,28 +48,44 @@ class Perm:
 			print(cycle)
 		
 	def __mul__(self, p):
-		newP = Perm(self.n, self.cycles + p.cycles);
-		return newP;
+		newP = Perm(self.n, p.cycles + self.cycles)
+		return newP
 
+	def inv(self):
+		newP = Perm(self.n, map(lambda l: list(reversed(l)), self.cycles))
+		return newP
+
+	def __div__(self, p):
+		return self * p.inv()
+
+	def __pow__(self, ex):
+		if ex == 0:
+			return Perm(self.n, ())
+		elif ex > 0:
+			return self.__pow__(ex-1) * self
+		else:
+			return self.__pow__(ex+1) / self
+		
+					
 	def __eq__(self, p):
 		return self.l == p.l;
+
+	def __str__(self):
+		return ', '.join(map(str, self.cycles))
+
 
 c = ([1,2], [3,4])
 p = Perm(4, c)
 
+print(str(p))
 p.printl()
-p.printc()
 
 c2 = ([1,4],[1,3])
 p2 = Perm(4, c2)
 
-p2.printl()
-p2.printc()
-
 p = p * p2
 
-p.printl()
-p.printc()
+print(str(p))
 
 c3 = ([1,2,3],)
 
@@ -73,9 +93,7 @@ p3 = Perm(4, c3)
 p4 = Perm(4, c3)
 print('3 times ', c3, ':')
 for i in range(3):
-	p3.printl()
-	p3.printc()
-	p3 = p3 * p4
+	print(p3 ** i)
 
 
 c5 = ([1,2,3,4],)
@@ -88,7 +106,6 @@ p5 = ip
 print ('rotation:')
 for i in range(5):
 	p5.printl()
-	p5.printc()
 	if p5 == ip:
 		print('is identity')
 	p5 = p5 * p6
