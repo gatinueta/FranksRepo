@@ -2,10 +2,32 @@
 # python -m pdb perm.py
 # for interactive play
 
+from itertools import permutations
+
 class Perm: 
-	def __init__(self, n, lol):
+	class Iter:
+		def __init__(self, n):
+			self.n = n
+
+		def __iter__(self):
+			self.perms = permutations(range(1, self.n+1))
+			return self
+		def __next__(self):
+			p = next(self.perms)
+			nt = (0,) + p	
+			return Perm(self.n, nt, True)
+
+	@staticmethod
+	def enumerate(n):
+		myiter = Perm.Iter(n)
+		return iter(myiter)
+		
+	def __init__(self, n, lol, asfunc=False):
 		self.n = n
-		self.l = self._tol(lol)
+		if asfunc:
+			self.l = tuple(lol)
+		else:
+			self.l = self._tol(lol)
 		self._tocycles()
 		
 	def _tol(self, lol):
@@ -21,7 +43,7 @@ class Perm:
 				tp = rl.index(dest)
 				rr[tp] = source
 			rl = rr
-		return rl
+		return tuple(rl)
 	
 	def _tocycles(self):
 		self.cycles = []
@@ -72,6 +94,8 @@ class Perm:
 
 	def __str__(self):
 		return ', '.join(map(str, self.cycles))
+	def __hash__(self):
+		return hash((self.n, self.l))
 
 
 c = ([1,2], [3,4])
@@ -110,3 +134,26 @@ for i in range(5):
 		print('is identity')
 	p5 = p5 * p6
 
+pit = Perm.enumerate(3)
+
+for perm in pit:
+	print(perm)
+
+subgroup = set()
+generator = Perm(4, ((1,2,3),))
+id = Perm(4, ())
+
+subgroup.add(id)
+newperm = generator
+while newperm != id:
+	subgroup.add(newperm)
+	newperm *= generator
+
+transp = Perm(4, ((1,2),))
+print('class for ', transp, ':')
+	
+for perm in subgroup:
+	print(transp * perm)	
+
+
+	
