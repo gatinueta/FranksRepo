@@ -1,5 +1,5 @@
 # use 
-# python -m pdb perm.py
+# python3 -m pdb perm.py
 # for interactive play
 
 from itertools import permutations
@@ -94,9 +94,23 @@ class Perm:
 
 	def __str__(self):
 		return ', '.join(map(str, self.cycles))
+	def __repr__(self):
+		return 'Perm({0})'.format(self.__str__())
+
 	def __hash__(self):
 		return hash((self.n, self.l))
 
+	@staticmethod
+	def cosets(subgroup):
+		cosets = set()
+		n = next(iter(subgroup)).n
+		for operm in Perm.enumerate(n):
+			cosets_operm = set()
+			for perm in subgroup:
+				el = operm * perm	
+				cosets_operm.add(el)
+			cosets.add(frozenset(cosets_operm))	
+		return cosets
 
 c = ([1,2], [3,4])
 p = Perm(4, c)
@@ -140,7 +154,7 @@ for perm in pit:
 	print(perm)
 
 subgroup = set()
-generator = Perm(4, ((1,2,3),))
+generator = Perm(4, ((1,2,3,4),))
 id = Perm(4, ())
 
 subgroup.add(id)
@@ -149,11 +163,17 @@ while newperm != id:
 	subgroup.add(newperm)
 	newperm *= generator
 
-transp = Perm(4, ((1,2),))
-print('class for ', transp, ':')
-	
-for perm in subgroup:
-	print(transp * perm)	
+
+cosets = Perm.cosets(subgroup)
+print(cosets)
+
+fourgroup = (
+	Perm(4, ()),
+	Perm(4, ((1,2),(3,4))),
+	Perm(4, ((1,3),(2,4))),
+	Perm(4, ((1,4),(2,3)))
+)
+for coset in Perm.cosets(fourgroup):
+	print(coset)
 
 
-	
