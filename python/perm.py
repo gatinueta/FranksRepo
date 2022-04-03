@@ -21,7 +21,11 @@ class Perm:
 	def enumerate(n):
 		myiter = Perm.Iter(n)
 		return iter(myiter)
-		
+	
+	@staticmethod		
+	def id(n):
+		return Perm(n, ())
+	
 	def __init__(self, n, lol, asfunc=False):
 		self.n = n
 		if asfunc:
@@ -77,7 +81,7 @@ class Perm:
 		newP = Perm(self.n, map(lambda l: list(reversed(l)), self.cycles))
 		return newP
 
-	def __div__(self, p):
+	def __truediv__(self, p):
 		return self * p.inv()
 
 	def __pow__(self, ex):
@@ -112,68 +116,69 @@ class Perm:
 			cosets.add(frozenset(cosets_operm))	
 		return cosets
 
-c = ([1,2], [3,4])
-p = Perm(4, c)
+def example():
+	c = ([1,2], [3,4])
+	p = Perm(4, c)
 
-print(str(p))
-p.printl()
+	print(str(p))
+	p.printl()
 
-c2 = ([1,4],[1,3])
-p2 = Perm(4, c2)
+	c2 = ([1,4],[1,3])
+	p2 = Perm(4, c2)
 
-p = p * p2
+	p = p * p2
 
-print(str(p))
+	print(str(p))
 
-c3 = ([1,2,3],)
+	c3 = ([1,2,3],)
 
-p3 = Perm(4, c3)
-p4 = Perm(4, c3)
-print('3 times ', c3, ':')
-for i in range(3):
-	print(p3 ** i)
-
-
-c5 = ([1,2,3,4],)
-
-p6 = Perm(4, c5)
-
-ip = Perm(4, ())
-p5 = ip
-
-print ('rotation:')
-for i in range(5):
-	p5.printl()
-	if p5 == ip:
-		print('is identity')
-	p5 = p5 * p6
-
-pit = Perm.enumerate(3)
-
-for perm in pit:
-	print(perm)
-
-subgroup = set()
-generator = Perm(4, ((1,2,3,4),))
-id = Perm(4, ())
-
-subgroup.add(id)
-newperm = generator
-while newperm != id:
-	subgroup.add(newperm)
-	newperm *= generator
+	p3 = Perm(4, c3)
+	p4 = Perm(4, c3)
+	print('3 times ', c3, ':')
+	for i in range(3):
+		print(p3 ** i)
 
 
-cosets = Perm.cosets(subgroup)
-print(cosets)
+	c5 = ([1,2,3,4],)
 
-fourgroup = (
-	Perm(4, ()),
-	Perm(4, ((1,2),(3,4))),
-	Perm(4, ((1,3),(2,4))),
-	Perm(4, ((1,4),(2,3)))
-)
-for coset in Perm.cosets(fourgroup):
-	print(coset)
+	p6 = Perm(4, c5)
+
+	ip = Perm(4, ())
+	p5 = ip
+
+	print ('rotation:')
+	for i in range(5):
+		p5.printl()
+		if p5 == ip:
+			print('is identity')
+		p5 = p5 * p6
+
+	pit = Perm.enumerate(3)
+
+	for perm in pit:
+		print(perm)
+
+	subgroup = set()
+	generator = Perm(4, ((1,2,3,4),))
+	id = Perm(4, ())
+
+	subgroup.add(id)
+	newperm = generator
+	while newperm != id:
+		subgroup.add(newperm)
+		newperm *= generator
+
+
+	cosets = Perm.cosets(subgroup)
+	print(cosets)
+
+	fourgroup = (
+		Perm(4, ()),
+		Perm(4, ((1,2),(3,4))),
+		Perm(4, ((1,3),(2,4))),
+		Perm(4, ((1,4),(2,3)))
+	)
+	for coset in Perm.cosets(fourgroup):
+		print(coset)
 
 
