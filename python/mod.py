@@ -71,17 +71,28 @@ def clambda(n):
 	return res
 
 counts = defaultdict(int)
-
+maxr = 0
 for nn in range(2, n):
 	r = ord(nn,n)
 	counts[r] += 1
-
+	if r > maxr:
+		maxr = r
+		maxnn = nn
 	print('ord({},{}) == {} (factors={}, phi={})'.format(nn, n, r, factors(nn), phi(nn)))
 
 print('factors({}) = {}, phi({}) = {}, phi(phi({})) = {}, clambda({}) = {}'.format(n, factormap(n), n, phi(n), n, phi(phi(n)), n, clambda(n)))
+print('maxord:{}, smallest el maxord:{}'.format(maxr, maxnn))
 
 for k in sorted(counts.keys()):
 	print('ord {}: {} elements, phi({}) = {}, clambda({}) = {}'.format(k, counts[k], k, phi(k), k, clambda(k)))
 
-# print(counts)
+np = 1
+p = maxnn
 
+while True:
+	print('{} ** {}: {} (ord {})'.format(maxnn, np, p, ord(p, n)))
+	if p == 1 or np > n:
+		break
+	np += 1
+	p = (p * maxnn) % n
+	
