@@ -40,22 +40,48 @@ def factorization(n):    # (cf. https://stackoverflow.com/a/15703327/849891)
 def factors(n):
 	return list(factorization(n))
 
-def phi(n):
+def factormap(n):
 	factorMap = defaultdict(int)
 	for i in factors(n):
 		factorMap[i] += 1
+	return factorMap
+	
+def phi(n):
+	if n == float('inf'):
+		return n
 	res = 1
+	factorMap = factormap(n)
 	for (k,v) in factorMap.items():
 		res *= (k**v - k**(v-1))
 	return res
 		
+def lcm(a, b):
+	return a*b // math.gcd(a, b)
+
+def clambda(n):
+	if n == float('inf'):
+		return n
+	res = 1
+	factorMap = factormap(n)
+	for (k,v) in factorMap.items():
+		if k == 2 and v > 2:
+			res = lcm(res, phi(k**v) // 2)
+		else:
+			res = lcm(res, phi(k**v))
+	return res
+
 counts = defaultdict(int)
 
-for nn in range(1, n+1):
+for nn in range(2, n):
 	r = ord(nn,n)
 	counts[r] += 1
 
 	print('ord({},{}) == {} (factors={}, phi={})'.format(nn, n, r, factors(nn), phi(nn)))
 
-print(counts)
+print('factors({}) = {}, phi({}) = {}, phi(phi({})) = {}, clambda({}) = {}'.format(n, factormap(n), n, phi(n), n, phi(phi(n)), n, clambda(n)))
+
+for k in sorted(counts.keys()):
+	print('ord {}: {} elements, phi({}) = {}, clambda({}) = {}'.format(k, counts[k], k, phi(k), k, clambda(k)))
+
+# print(counts)
 
