@@ -75,7 +75,8 @@ maxr = 0
 for nn in range(2, n):
 	r = ord(nn,n)
 	counts[r] += 1
-	if r > maxr:
+	
+	if r != float('inf') and r > maxr:
 		maxr = r
 		maxnn = nn
 	print('ord({},{}) == {} (factors={}, phi={})'.format(nn, n, r, factors(nn), phi(nn)))
@@ -90,7 +91,7 @@ np = 1
 p = maxnn
 
 while True:
-	print('{} ** {}: {} (ord {})'.format(maxnn, np, p, ord(p, n)))
+	print('{} ** {}: {} (ord {}). gcd({},{}) = {}'.format(maxnn, np, p, ord(p, n), np, n-1, math.gcd(np, n-1)))
 	if p == 1 or np > n:
 		break
 	np += 1
