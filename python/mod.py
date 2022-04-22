@@ -91,7 +91,7 @@ np = 1
 p = maxnn
 
 while True:
-	print('{} ** {}: {} (ord {}). gcd({},{}) = {}'.format(maxnn, np, p, ord(p, n), np, n-1, math.gcd(np, n-1)))
+	print('{} ** {}: {} (ord {}). gcd({},{}) = {}'.format(maxnn, np, p, ord(p, n), np, phi(n), math.gcd(np, phi(n))))
 	if p == 1 or np > n:
 		break
 	np += 1
