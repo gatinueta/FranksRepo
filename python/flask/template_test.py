@@ -7,7 +7,7 @@ def hello_world():
 
 @app.route('/template_attr')
 def render_attr():
-	l = [ { 'n': i, 'sq': i*i, 'inv': 1.0/i } for i in range(1, 5) ]
+	l = [ { 'n': i, 'sq': i*i, 'inv': 1.0/i } for i in range(1, 15) ]
 	return render_template('attr_template.html', my_list=l)
 
 if __name__ == '__main__':
