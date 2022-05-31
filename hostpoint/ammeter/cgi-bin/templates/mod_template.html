@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Flask Template Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <style type="text/css">
+      .container {
+        max-width: 500px;
+        padding-top: 100px;
+      }
+td {
+	text-align: center;
+}
+td.emp {
+	background-color: coral;
+}
+      .fraction {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  letter-spacing: 0.001em;
+  text-align: center;
+  font-size: 12px;
+  }
+.fraction > span {
+  display: block;
+  padding: 0.1em;
+  }
+.fraction span.fdn {border-top: thin solid black;}
+.fraction span.bar {display: none;}
+table {
+  border-collapse: collapse;
+}
+table, td, th {
+  border: 1px solid;
+}
+</style>
+  </head>
+  <body>
+    <div class="container">
+ 	<form method="post">
+        <label for="base">Base</label>
+        <br>
+        <input type="number" name="base" min="2"
+               placeholder="Base"
+               value="{{ request.form['base'] }}"></input>
+        <br>
+        <button type="submit">Set Base</button>
+    </form>
+<hr>
+      <table>
+	<tr><th>n</th><th>&lambda;(n)</th><th>ord(10,n)</th><th>inv(n)</th></tr>
+        {% for el in my_list %}
+		{% if el.clambda == el.ord10 %}
+    			{% set row_class = "emp" %}
+		{% else %}
+    			{% set row_class = "none" %}
+		{% endif %}
+        <tr>
+		<td>{{el.n}}</td>
+		<td>{{el.clambda}}</td>
+		<td>{{el.ord10}}</td>
+		<td class="{{row_class}}">
+			<div class="fraction">
+				<span class="fup">1</span>
+				<span class="bar">/</span>
+				<span class="fdn">{{el.n}}</span>
+			</div>
+		</td>
+	</tr>
+        {% endfor %}
+      </table>
+
+	<p>
+     		{{ modinfo.info1 }}
+	</p>
+	<p>
+		{{ modinfo.info2 }}
+	</p>
+
+      <h1>ord list</h1>
+      <table>
+        {% for el in modinfo.ordl %}
+	<tr><td>{{el}}</td></tr>
+        {% endfor %}
+      </table>
+      <h1>ord list sorted</h1>
+      <table>
+        {% for el in modinfo.ordl_sorted %}
+	<tr><td>{{el}}</td></tr>
+        {% endfor %}
+      </table>
+      <h1>exp for smallest root</h1>
+      <table>
+        {% for el in modinfo.expl %}
+	<tr><td>{{el}}</td></tr>
+        {% endfor %}
+      </table>
+	<p>
+	<pre>
+		{{ modinfo }}
+	</pre>
+	</p>
+    </div>
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  </body>
+</html>
+
