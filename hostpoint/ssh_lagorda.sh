@@ -1,3 +1,1 @@
-ssh lagorda@s44.server.hostpoint.ch
-cd public_html/ammeter/cgi-bin/
-
+ssh -i /Users/frankammeter/.ssh/id_rsa lagorda@s44.server.hostpoint.ch
