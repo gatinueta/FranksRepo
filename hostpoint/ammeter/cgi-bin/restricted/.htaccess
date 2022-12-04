@@ -1,4 +1,0 @@
-AuthType Basic
-AuthName AccessControl
-Require user ammete
-AuthUserFile /nfs/cust/6/1/9/ammete/.htpasswd
