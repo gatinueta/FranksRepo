@@ -1,0 +1,2 @@
+access_key = AKIASSAGTV22LKU5QAF6
+secret_access_key = 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

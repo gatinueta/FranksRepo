@@ -1,0 +1,4 @@
+export AWS_ACCESS_KEY_ID=AKIASSAGTV22KHJDYKKW
+export AWS_SECRET_ACCESS_KEY=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
+export AWS_REGION="us-west-2"
+terraform plan
