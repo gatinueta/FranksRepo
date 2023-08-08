@@ -216,3 +216,5 @@ pip-log.txt
 
 *.class
 
+terraform/aws/.terraform
+terraform/aws/.terraform.lock.hcl
