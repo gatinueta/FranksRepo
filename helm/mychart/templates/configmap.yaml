@@ -6,5 +6,9 @@ metadata:
 data:
   myvalue: "Hello World"
   releasename: "release-{{.Release.Name}}"
-  drink: {{ quote .Values.favorite.drink }}
+  favorite-drink: {{ quote .Values.favorite.drink }}
+  favorite-food: {{ quote .Values.favorite.food }}
+  worst-drink: {{ quote .Values.worst.drink }}
+  worst-food: {{ quote .Values.worst.food }}
+
  
