@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mychart-configmap
+  {{- template "mychart.labels" . }}
+data:
+  myvalue: "Hello World"
+  releasename: "release-{{.Release.Name}}"
+  drink: {{ quote .Values.favorite.drink }}
+ 
