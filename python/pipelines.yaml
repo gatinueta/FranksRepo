@@ -1,0 +1,13 @@
+appcontrol_start:
+  LIB_VAR_JOB_TYPE: appcontrol
+  LIB_VAR_ENV: nightly
+  LIB_VAR_LIBRARY_BRANCH: features/fam/argocd_terminate_op
+  LIB_VAR_INCLUDED_APPLICATIONS: all
+  LIB_VAR_APPCONTROL_MODE: start
+  LIB_VAR_VERBOSE: true
+db_reset:
+  LIB_VAR_JOB_TYPE: dbReset 
+  LIB_VAR_ENV: nightly
+  LIB_VAR_LIBRARY_BRANCH: features/fam/argocd_terminate_op
+  LIB_VAR_INCLUDED_APPLICATIONS: all
+  LIB_VAR_VERBOSE: true
