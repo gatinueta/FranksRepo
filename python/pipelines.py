@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from urllib.parse import quote
 import yaml
 
@@ -13,11 +14,13 @@ pars_tmp = {
 with open('pipelines.yaml', 'r') as file:
   pipelines = yaml.safe_load(file)
 
-for name, pars in pipelines.items():
-  prefix = 'https://git.bsiag.com/oceanic/oceaniccrm/-/pipelines/new?ref=oceanic%2Freleases%2F22.0&'
-  parameter_list = [ f'var[{key}]={quote(str(value))}' for (key,value) in pars.items() ]
-  parameters = '&'.join(parameter_list)
+prefix = 'https://git.bsiag.com/oceanic/oceaniccrm/-/pipelines/new?ref=oceanic%2Freleases%2F22.0&'
 
-  url = f'{prefix}&{parameters}'
-  print(f'{name}: {url}')
+for name, pars in pipelines.items():
+  if not name.startswith('_'):
+    parameter_list = [ f'var[{key}]={quote(str(value))}' for (key,value) in pars.items() ]
+    parameters = '&'.join(parameter_list)
+
+    url = f'{prefix}&{parameters}'
+    print(f'{name}: {url}')
 
