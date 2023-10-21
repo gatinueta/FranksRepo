@@ -1,3 +1,2 @@
-this is my first github repo.
-I should work now. bye.
+moved to https://gitlab.com/frank.ammeter/FranksRepo
 
