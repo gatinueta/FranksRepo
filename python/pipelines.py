@@ -1,20 +1,26 @@
 #!/usr/bin/python3
 from urllib.parse import quote
 import yaml
+import os
+import sys
+import getopt
 
-pars_tmp = {
-  'LIB_VAR_JOB_TYPE': 'appcontrol',
-  'LIB_VAR_ENV': 'nightly',
-  'LIB_VAR_LIBRARY_BRANCH': 'features/fam/argocd_terminate_op',
-  'LIB_VAR_INCLUDED_APPLICATIONS': 'all',
-  'LIB_VAR_APPCONTROL_MODE': 'start',
-  'LIB_VAR_VERBOSE': 'true'
-}
+script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 
-with open('pipelines.yaml', 'r') as file:
+branch = 'oceanic/releases/22.0'
+
+opts, args = getopt.getopt(sys.argv[1:],"b:")
+
+print(opts)
+
+for opt, arg in opts:
+  if opt == '-b':
+    branch = arg
+    
+with open(f'{script_directory}/pipelines.yaml', 'r') as file:
   pipelines = yaml.safe_load(file)
 
-prefix = 'https://git.bsiag.com/oceanic/oceaniccrm/-/pipelines/new?ref=oceanic%2Freleases%2F22.0&'
+prefix = f'https://git.bsiag.com/oceanic/oceaniccrm/-/pipelines/new?ref={branch}'
 
 for name, pars in pipelines.items():
   if not name.startswith('_'):
