@@ -21,7 +21,7 @@ c = {
     '8': 8,
     '9': 9,
     'T': 10,
-    'J': 11,
+    'J': 1,
     'Q': 12,
     'K': 13,
     'A': 14
@@ -30,18 +30,30 @@ c = {
 def classify_streak(hand):
     lc = ' '
     streaks = []
-    streak = ''
-    for c in sorted(hand):
+    streak = [] 
+    js = 0
+    l = list(hand)
+    while l.count('J') > 0:
+        l.remove('J')
+        js += 1
+
+    sortedhand = sorted(l)
+    for c in sortedhand:
         if c==lc:
             streak += c
         else:
             if len(streak):
                 streaks.append(streak)
-            streak = c
+            streak = [ c ]
             lc = c
     if len(streak):
         streaks.append(streak)
+    if len(streaks)==0:
+        streaks = [[]]
     streaks.sort(key=len, reverse=True)
+    for i in range(js):
+        streaks[0].append('J')
+    print(f'streaks:{streaks}')
     match(len(streaks[0])):
         case 5:
             return 'five'
