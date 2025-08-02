@@ -4,7 +4,7 @@ import os
 import threading
 
 TOKEN = os.environ.get('LICHESS_TOKEN')
-STOCKFISH_PATH = "/Users/frankammeter/stockfish/stockfish-macos-x86-64-bmi2"
+STOCKFISH_PATH = os.environ.get('STOCKFISH_PATH')
 BOT_ID = "gatinuetabot"
 
 session = berserk.TokenSession(TOKEN)
