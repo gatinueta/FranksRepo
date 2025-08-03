@@ -26,10 +26,12 @@ def get_top_moves(board, limit=5):
         suggestions.append((move.uci(), score))
     return suggestions
 
-MAX_EVAL_DROP = 0.5  # maximaler Bewertungsabfall gegenüber dem besten Zug in Centipawns
-MIN_SACRIFICE_MATERIAL = 2  # minimale geopferte Materialsumme (z. B. Bauer=1, Springer=3 …)
+DEFAULT_GAME_PARAMETERS = {
+    'MAX_EVAL_DROP': 0.5,  # maximaler Bewertungsabfall gegenüber dem besten Zug in Centipawns
+    'MIN_SACRIFICE_MATERIAL': 2  # minimale geopferte Materialsumme (z. B. Bauer=1, Springer=3 …)
+}
 
-def select_move(board):
+def select_move(board, game_parameters):
     result = engine.analyse(board, chess.engine.Limit(depth=15), multipv=5)
     best_score = result[0]["score"].relative.score(mate_score=10000) / 100.0
 
@@ -39,7 +41,7 @@ def select_move(board):
         score = entry["score"].relative.score(mate_score=10000) / 100.0
         eval_drop = best_score - score
 
-        if eval_drop <= MAX_EVAL_DROP:
+        if eval_drop <= game_parameters['MAX_EVAL_DROP']:
             candidate_moves.append((move, score, eval_drop, board.san(move)))
 
     # Suche unter den akzeptablen Zügen nach Opfern / Komplikationen
@@ -59,7 +61,7 @@ def select_move(board):
         return result[0]["pv"][0].uci()
 
 
-def is_sacrifice(board, move):
+def is_sacrifice(board, move, game_parameters):
     """Bestimme, ob der Zug eine Art Opfer ist."""
     piece = board.piece_at(move.from_square)
     captured = board.piece_at(move.to_square)
@@ -73,7 +75,7 @@ def is_sacrifice(board, move):
     # Einfaches Opfer: Figur wird geschlagen ohne Gegengewicht
     if capture_value < value:
         # Aber nur werten, wenn Materialverlust mindestens 2 Punkte beträgt (z.B. Springer geopfert)
-        if (value - capture_value) >= MIN_SACRIFICE_MATERIAL:
+        if (value - capture_value) >= game_parameters['MIN_SACRIFICE_MATERIAL']:
             return True
 
     # Erweitert: Zug zieht Figur auf Feld, wo sie leicht geschlagen werden kann (hängt)
@@ -81,7 +83,7 @@ def is_sacrifice(board, move):
     is_hanging = board.is_attacked_by(not board.turn, move.to_square)
     board.pop()
 
-    if is_hanging and value >= MIN_SACRIFICE_MATERIAL:
+    if is_hanging and value >= game_parameters['MIN_SACRIFICE_MATERIAL']:
         return True
 
     return False
@@ -107,7 +109,8 @@ def handle_game(game_id):
     game_stream = client.bots.stream_game_state(game_id)
 
     is_white = None
-
+    game_parameters = DEFAULT_GAME_PARAMETERS.copy()
+    
     for event in game_stream:
         print(f'Game event: {event}')
 
@@ -123,7 +126,7 @@ def handle_game(game_id):
 
             # Wenn wir weiß sind und es noch keinen Zug gibt, sind wir dran
             if is_white and len(moves) == 0:
-                move = select_move(board)
+                move = select_move(board, game_parameters)
                 client.bots.make_move(game_id, move)
 
         elif event['type'] == 'gameState':
@@ -140,6 +143,14 @@ def handle_game(game_id):
             if (is_white and board.turn == chess.WHITE) or (not is_white and board.turn == chess.BLACK):
                 move = select_move(board)
                 client.bots.make_move(game_id, move)
+        elif event["type"] == "chatLine" and event["room"] == "player":
+            user = event["username"]
+            text = event["text"]
+            # simple parsing
+            if "=" in text:
+                key, value = text.strip().split("=", 1)
+                print(f'set parameter {key} to {value}')
+                game_parameters[key] = value
 
 
 
